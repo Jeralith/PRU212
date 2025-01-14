@@ -1,10 +1,9 @@
 using System.Collections;
-using System.Numerics;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    #region Variables
     [SerializeField] private Rigidbody2D _rb;
     private bool _isFacingRight = true;
     [Space]
@@ -34,22 +33,25 @@ public class PlayerMovement : MonoBehaviour
     private float _coyoteTimeCounter;
     private float _fallMultiplier = 7f;
     private float _jumpVelocityFallOff = 8f;
-    
-    [SerializeField] private int extraJump = 1;
-    [SerializeField] private int availableJump;
+
+    [SerializeField] private int _extraJump = 1;
+    [SerializeField] private int _availableJump;
 
     [Space]
     [Header("Wall Tech")]
-    [SerializeField] private bool _isWallSliding;
+    //[SerializeField] private bool _isWallSliding;
     [SerializeField] private bool _isWallJumping;
     [SerializeField] private float _wallSlidingSpeed;
     [SerializeField] private float _wallJumpingTime = 0.2f;
     private float _wallJumpingCounter;
     private float _wallJumpingDirection;
     [SerializeField] private float _wallJumpingDuration = 0.2f;
-    private UnityEngine.Vector2 _wallJumpingPower = new UnityEngine.Vector2(6f, 15f);
+    [SerializeField] private float _wallJumpingLerp = 10f;
+    private Vector2 _wallJumpingPower = new Vector2(6f, 15f);
 
     private float xRaw, yRaw;
+
+    #endregion
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
@@ -61,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
-        
+
         xRaw = Input.GetAxisRaw("Horizontal");
         yRaw = Input.GetAxisRaw("Vertical");
 
@@ -93,31 +95,35 @@ public class PlayerMovement : MonoBehaviour
     }
     private bool IsWalled()
     {
-        
+
         return Physics2D.OverlapCircle(wallCheck.position, 0.2f, wallLayer);
     }
     private void BasicMovement()
     {
+        //if player is walljumping, use a slightly different movement mechanic
         if (!_isWallJumping)
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(Input.GetAxis("Horizontal") * _speed, _rb.linearVelocityY);
+            _rb.linearVelocity = new Vector2(Input.GetAxis("Horizontal") * _speed, _rb.linearVelocityY);
         }
         else
         {
-            _rb.linearVelocity = UnityEngine.Vector2.Lerp(_rb.linearVelocity, new UnityEngine.Vector2(_wallJumpingDirection * _speed, _rb.linearVelocityY), 0.5f * Time.deltaTime);
+            _rb.linearVelocity = Vector2.Lerp(_rb.linearVelocity, new Vector2(_wallJumpingDirection * _speed, _rb.linearVelocityY), _wallJumpingLerp * Time.deltaTime);
         }
     }
     private void Jump()
     {
+        //initialize jump buffering and coyote time
         if (IsGrounded())
         {
             _coyoteTimeCounter = _coyoteTime;
-            availableJump = extraJump;
+            //reset double jump when player is grounded
+            _availableJump = _extraJump;
         }
         else
         {
             _coyoteTimeCounter -= Time.deltaTime;
         }
+        //also activate buffer is player is dashing
         if (Input.GetButtonDown("Jump") || (Input.GetButtonDown("Jump") && _isDashing))
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
@@ -128,23 +134,32 @@ public class PlayerMovement : MonoBehaviour
         }
         if (_jumpBufferTimeCounter > 0f && _coyoteTimeCounter > 0f)
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(_rb.linearVelocityX, _jumpSpeed);
+            _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
-            availableJump--;
+            //if player touches wall, use wall jump instead 
+            if (!IsWalled())
+            {
+                _availableJump--;
+            }
         }
-        else if (Input.GetButtonDown("Jump") && _coyoteTimeCounter <= 0f && availableJump > 0 && canDoubleJump)
+        //double jump condition
+        else if (Input.GetButtonDown("Jump") && _coyoteTimeCounter <= 0f && _availableJump > 0 && canDoubleJump)
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(_rb.linearVelocityX, _jumpSpeed);
+            _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
-            availableJump--;
+            if (!IsWalled())
+            {
+                _availableJump--;
+            }
         }
-
+        //apply downward force for snappier jump feeling
         if (Input.GetButtonUp("Jump") && _rb.linearVelocityY > 0f || _rb.linearVelocityY < _jumpVelocityFallOff)
         {
-            _rb.linearVelocity += _fallMultiplier * Physics2D.gravity.y * UnityEngine.Vector2.up * Time.deltaTime;
+            _rb.linearVelocity += _fallMultiplier * Physics2D.gravity.y * Vector2.up * Time.deltaTime;
             _coyoteTimeCounter = 0f;
         }
     }
+    //flip player's entire model horizontally when moving opposite direction
     private void Flip()
     {
         if (_isFacingRight && xRaw < 0f || !_isFacingRight && xRaw > 0f)
@@ -158,6 +173,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Dash()
     {
+        //dash is refilled when player touches ground
         if (IsGrounded())
         {
             _canDash = true;
@@ -171,29 +187,34 @@ public class PlayerMovement : MonoBehaviour
     {
         _canDash = false;
         _isDashing = true;
+        //math time: player dashing 1 direction => distance is 1 unit. player dashing 2 dirs (diagonal), distance is sqrt(2). this shit normalize diagonal dashes back to 1.
         float dashNormalizer = 0.707f;
         float originalGravity = _rb.gravityScale;
+        //disable gravity for total straight dash movement
         _rb.gravityScale = 0f;
-        // rb.linearVelocity = new Vector2(transform.localScale.x * dashingPower, 0f);
+        //diagonal cases
         if (yRaw != 0 && xRaw != 0)
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(transform.localScale.x * _dashingPower * dashNormalizer, yRaw * _dashingPower * dashNormalizer);
+            _rb.linearVelocity = new Vector2(transform.localScale.x * _dashingPower * dashNormalizer, yRaw * _dashingPower * dashNormalizer);
         }
+        //up/down cases
         else if (yRaw != 0 && xRaw == 0)
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(0f, yRaw * _dashingPower);
+            _rb.linearVelocity = new Vector2(0f, yRaw * _dashingPower);
         }
         else
+        //everything else
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(transform.localScale.x * _dashingPower, yRaw * _dashingPower);
+            _rb.linearVelocity = new Vector2(transform.localScale.x * _dashingPower, yRaw * _dashingPower);
         }
         float yRec = yRaw;
+        //draw trial
         tr.emitting = true;
         yield return new WaitForSeconds(dashingTime * dashNormalizer);
         tr.emitting = false;
         if (yRec > 0)
         {
-            _rb.linearVelocity = new UnityEngine.Vector2(_rb.linearVelocityX, 0f);
+            _rb.linearVelocity = new Vector2(_rb.linearVelocityX, 0f);
         }
         _rb.gravityScale = originalGravity;
 
@@ -205,16 +226,16 @@ public class PlayerMovement : MonoBehaviour
         if (IsWalled() && !IsGrounded() && xRaw != 0 && _rb.linearVelocityY <= 0)
         {
             _rb.linearVelocityY *= _wallSlidingSpeed;
-            _isWallSliding = true;
+            //_isWallSliding = true;
         }
         else
         {
-            _isWallSliding = false;
+            //_isWallSliding = false;
         }
     }
     private void WallJump()
     {
-        
+
         if (IsWalled() && !IsGrounded())
         {
             _isWallJumping = false;
@@ -231,7 +252,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonDown("Jump") && _wallJumpingCounter > 0f)
         {
             _isWallJumping = true;
-            _rb.linearVelocity = new UnityEngine.Vector2(_wallJumpingDirection * _speed, _jumpSpeed);
+            _rb.linearVelocity = new Vector2(_wallJumpingDirection * _speed, _jumpSpeed);
 
             _wallJumpingCounter = 0f;
 
@@ -250,5 +271,5 @@ public class PlayerMovement : MonoBehaviour
     {
         _isWallJumping = false;
     }
-    
+
 }
