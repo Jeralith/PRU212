@@ -13,16 +13,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _dashingPower = 24f;
     [SerializeField] private float dashingTime = 0.2f;
 
-
-    [Space]
-    [Header("Misc")]
-    [SerializeField] private float _speed = 15f;
-    [SerializeField] private Transform groundCheck;
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private Transform wallCheck;
-    [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private TrailRenderer tr;
-
     [Space]
     [Header("Jump")]
     [SerializeField] private bool canDoubleJump;
@@ -39,7 +29,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Space]
     [Header("Wall Tech")]
-    //[SerializeField] private bool _isWallSliding;
+    [SerializeField] private bool _isWallSliding;
     [SerializeField] private bool _isWallJumping;
     [SerializeField] private float _wallSlidingSpeed;
     [SerializeField] private float _wallJumpingTime = 0.2f;
@@ -49,6 +39,16 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _wallJumpingLerp = 10f;
     private Vector2 _wallJumpingPower = new Vector2(6f, 15f);
 
+    [Space]
+    [Header("Misc")]
+    [SerializeField] private float _speed = 15f;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private Transform wallCheck;
+    [SerializeField] private LayerMask wallLayer;
+    [SerializeField] private TrailRenderer tr;
+
+    public ParticleSystem slideParticle;
     private float xRaw, yRaw;
 
     #endregion
@@ -81,6 +81,7 @@ public class PlayerMovement : MonoBehaviour
         WallSlide();
 
         WallJump();
+        WallParticle();
     }
     private void FixedUpdate()
     {
@@ -226,11 +227,11 @@ public class PlayerMovement : MonoBehaviour
         if (IsWalled() && !IsGrounded() && xRaw != 0 && _rb.linearVelocityY <= 0)
         {
             _rb.linearVelocityY *= _wallSlidingSpeed;
-            //_isWallSliding = true;
+            _isWallSliding = true;
         }
         else
         {
-            //_isWallSliding = false;
+            _isWallSliding = false;
         }
     }
     private void WallJump()
@@ -271,5 +272,22 @@ public class PlayerMovement : MonoBehaviour
     {
         _isWallJumping = false;
     }
+    private void WallParticle()
+    {
+        var main = slideParticle.main;
 
+        if (IsWalled() && !IsGrounded())
+        {
+            main.startColor = Color.white;
+        }
+        else
+        {
+            main.startColor = Color.clear;
+        }
+    }
+    private int ParticleSide()
+    {
+        return _isFacingRight ? 1 : -1;
+
+    }
 }
