@@ -108,15 +108,13 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
     }
-    private bool IsGrounded()
-    {
-        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-    }
-    private bool IsWalled()
-    {
 
-        return Physics2D.OverlapCircle(wallCheck.position, 0.2f, wallLayer);
-    }
+    #region CollisionCheck
+    private bool IsGrounded() => Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+
+    private bool IsWalled() => Physics2D.OverlapCircle(wallCheck.position, 0.2f, wallLayer);
+    #endregion
+
     private void BasicMovement()
     {
         //if player is walljumping, use a slightly different movement mechanic
@@ -171,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
         //double jump condition
         else if (Input.GetButtonDown("Jump") && _coyoteTimeCounter <= 0f && _availableJump > 0 && canDoubleJump)
         {
-            
+
             MakeDust();
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
@@ -208,7 +206,7 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.LeftShift) && _canDash)
         {
-            
+
             MakeDashDust(DashDustDirectionX(), yRaw);
 
             StartCoroutine(ExecuteDash());
@@ -335,16 +333,18 @@ public class PlayerMovement : MonoBehaviour
         dashParticle.Play();
     }
     private float DashDustDirectionX()
-    {
-        return xRaw != 0 ? xRaw : _isFacingRight ? 1 : -1;
+    { 
+        if (xRaw == 0 && yRaw != 0) return 0;
+        return xRaw != 0 ? xRaw : _isFacingRight ? 1 : -1; 
     }
+
     private void Freeze()
     {
         _pendingFreezeDuration = _freezeDuration;
     }
     private IEnumerator ExecuteFreeze()
     {
-        
+
         _isFrozen = true;
         var original = Time.timeScale;
         Time.timeScale = 0f;
