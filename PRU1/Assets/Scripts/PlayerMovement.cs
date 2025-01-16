@@ -11,6 +11,9 @@ public class PlayerMovement : MonoBehaviour
     private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
 
+    [SerializeField] private float _maxFallSpeed = -20f;
+    [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
+
     [Space]
     [Header("Dash")]
     [SerializeField] private bool _canDash;
@@ -18,15 +21,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _dashingPower = 24f;
     [SerializeField] private float dashingTime = 0.2f;
     private float _dashNormalizer = 0.707f;
-
+    [SerializeField] private bool _freezeFrame = true;
     [Space]
     [Header("Jump")]
     [SerializeField] private bool canDoubleJump;
     [SerializeField] private float _jumpSpeed = 15f;
     [SerializeField] private float _coyoteTime = 0.2f;
     [SerializeField] private float _jumpBufferTime = 0.2f;
-    private float _jumpBufferTimeCounter;
-    private float _coyoteTimeCounter;
+    [SerializeField] private float _jumpBufferTimeCounter;
+    [SerializeField] private float _coyoteTimeCounter;
     private float _fallMultiplier = 7f;
     private float _jumpVelocityFallOff = 8f;
 
@@ -54,7 +57,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Space]
     [Header("Misc")]
-    [SerializeField] private float _freezeDuration = 1f;
+    [SerializeField] private float _freezeDuration = 0.1f;
     [SerializeField] private bool _isFrozen;
     [SerializeField] private float _pendingFreezeDuration = 0f;
     [SerializeField] private TrailRenderer tr;
@@ -98,7 +101,9 @@ public class PlayerMovement : MonoBehaviour
         WallSlide();
 
         WallJump();
+
         WallParticle();
+
         _wasGrounded = IsGrounded();
     }
     private void FixedUpdate()
@@ -129,6 +134,11 @@ public class PlayerMovement : MonoBehaviour
         if (!_wasGrounded && IsGrounded())
         {
             MakeDust();
+        }
+        //fall faster
+        if (_rb.linearVelocityY < FallSpeed())
+        {
+            _rb.linearVelocity = new Vector2(_rb.linearVelocityX, FallSpeed());
         }
     }
     private void Jump()
@@ -182,7 +192,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonUp("Jump") || _rb.linearVelocityY < _jumpVelocityFallOff)
         {
             _rb.linearVelocity += _fallMultiplier * Physics2D.gravity.y * Vector2.up * Time.deltaTime;
-            _coyoteTimeCounter = 0f;
+            //_coyoteTimeCounter = 0f;
         }
     }
     //flip player's entire model horizontally when moving opposite direction
@@ -206,15 +216,18 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.LeftShift) && _canDash)
         {
-
             MakeDashDust(DashDustDirectionX(), yRaw);
-
             StartCoroutine(ExecuteDash());
 
         }
     }
     private IEnumerator ExecuteDash()
     {
+        if (_freezeFrame) 
+        { 
+            StartCoroutine(ExecuteFreeze()); 
+        }
+
         _canDash = false;
         _isDashing = true;
         float originalGravity = _rb.gravityScale;
@@ -246,7 +259,6 @@ public class PlayerMovement : MonoBehaviour
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, 0f);
         }
         _rb.gravityScale = originalGravity;
-
         //rb.linearVelocity = new Vector2(0f, 0f);
         _isDashing = false;
     }
@@ -282,9 +294,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _isWallJumping = true;
             _rb.linearVelocity = new Vector2(_wallJumpingDirection * _speed, _jumpSpeed);
-
             _wallJumpingCounter = 0f;
-
             if (_wallJumpingDirection != transform.localScale.x)
             {
                 UnityEngine.Vector3 localScale = transform.localScale;
@@ -303,7 +313,6 @@ public class PlayerMovement : MonoBehaviour
     private void WallParticle()
     {
         var main = slideParticle.main;
-
         if (IsWalled() && !IsGrounded())
         {
             main.startColor = Color.white;
@@ -333,9 +342,9 @@ public class PlayerMovement : MonoBehaviour
         dashParticle.Play();
     }
     private float DashDustDirectionX()
-    { 
+    {
         if (xRaw == 0 && yRaw != 0) return 0;
-        return xRaw != 0 ? xRaw : _isFacingRight ? 1 : -1; 
+        return xRaw != 0 ? xRaw : _isFacingRight ? 1 : -1;
     }
 
     private void Freeze()
@@ -344,7 +353,6 @@ public class PlayerMovement : MonoBehaviour
     }
     private IEnumerator ExecuteFreeze()
     {
-
         _isFrozen = true;
         var original = Time.timeScale;
         Time.timeScale = 0f;
@@ -353,4 +361,9 @@ public class PlayerMovement : MonoBehaviour
         _pendingFreezeDuration = 0;
         _isFrozen = false;
     }
+
+    //if press down, fall speed is multiplied with a multiplier
+    private float FallSpeed() => Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? _maxFallSpeed * _maxFallSpeedMultiflier : _maxFallSpeed;
+
+
 }

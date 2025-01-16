@@ -660,7 +660,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 15
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -849,8 +849,8 @@ Transform:
   m_GameObject: {fileID: 771852764}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -13.97, y: -3.4159, z: 0.04489911}
-  m_LocalScale: {x: 0.9422333, y: 13.5861635, z: 1}
+  m_LocalPosition: {x: -13.945553, y: -3.4159, z: 0.04489911}
+  m_LocalScale: {x: 0.8935644, y: 13.5861635, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 614542088}
@@ -6316,19 +6316,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rb: {fileID: 0}
   _speed: 15
+  _maxFallSpeed: -15
+  _maxFallSpeedMultiflier: 1.8
   _canDash: 0
   _isDashing: 0
   _dashingPower: 36
   dashingTime: 0.2
-  canDoubleJump: 1
+  _freezeFrame: 0
+  canDoubleJump: 0
   _jumpSpeed: 15
-  _coyoteTime: 0.2
+  _coyoteTime: 0.12
   _jumpBufferTime: 0.2
+  _jumpBufferTimeCounter: 0
+  _coyoteTimeCounter: 0
   _extraJump: 1
   _availableJump: 0
   _isWallSliding: 0
   _isWallJumping: 0
-  _wallSlidingSpeed: 0.8
+  _wallSlidingSpeed: 0.65
   _wallJumpingTime: 0.2
   _wallJumpingDuration: 0.22
   _wallJumpingLerp: 10
@@ -6340,7 +6345,7 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 64
-  _freezeDuration: 0.1
+  _freezeDuration: 0.05
   _isFrozen: 0
   _pendingFreezeDuration: 0
   tr: {fileID: 1166823059}
