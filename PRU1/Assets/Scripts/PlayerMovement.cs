@@ -102,7 +102,7 @@ public class PlayerMovement : MonoBehaviour
 
         WallJump();
 
-        WallParticle();
+        WallDust();
 
         _wasGrounded = IsGrounded();
     }
@@ -310,7 +310,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _isWallJumping = false;
     }
-    private void WallParticle()
+    private void WallDust()
     {
         var main = slideParticle.main;
         if (IsWalled() && !IsGrounded())
