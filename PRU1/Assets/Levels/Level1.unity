@@ -12449,30 +12449,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e271de90d76e9c54398b08754187518a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rb: {fileID: 0}
   _speed: 15
   _maxFallSpeed: -15
   _maxFallSpeedMultiflier: 1.8
   _acceleration: 20
   _decceleration: 35
-  _canDash: 0
-  _isDashing: 0
   _dashingPower: 36
   _dashingTime: 0.2
   _freezeFrame: 0
-  _dashMomentum: 1000
-  _superDashCounter: 0
-  _superDashTime: 0.2
   canDoubleJump: 1
   _jumpSpeed: 15
   _coyoteTime: 0.12
   _jumpBufferTime: 0.2
-  _jumpBufferTimeCounter: 0
-  _coyoteTimeCounter: 0
   _extraJump: 1
-  _availableJump: 0
   _isWallSliding: 0
-  _isWallJumping: 0
   _wallSlidingSpeed: 0.65
   _wallJumpingTime: 0.2
   _wallJumpingDuration: 0.22
@@ -12485,18 +12475,10 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 64
-  _freezeDuration: 0.05
-  _isFrozen: 0
-  _pendingFreezeDuration: 0
   tr: {fileID: 1166823059}
   slideParticle: {fileID: 1650652229}
   groundParticle: {fileID: 962690671}
   dashParticle: {fileID: 1758962303}
-  _dashDustSpeed: 5
-  xRaw: 0
-  yRaw: 0
-  x: 0
-  y: 0
 --- !u!96 &1166823059
 TrailRenderer:
   serializedVersion: 3
