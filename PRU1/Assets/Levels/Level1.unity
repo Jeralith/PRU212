@@ -28734,7 +28734,7 @@ MonoBehaviour:
   _jumpSpeed: 13.8
   _coyoteTime: 0.12
   _jumpBufferTime: 0.2
-  _jumpVelocityFallOff: 8
+  _jumpVelocityFallOff: 13
   _extraJump: 1
   _isWallSliding: 0
   _wallSlidingSpeedMultiplier: 0.8
