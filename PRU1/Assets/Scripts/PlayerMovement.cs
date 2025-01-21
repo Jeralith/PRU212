@@ -110,7 +110,7 @@ public class PlayerMovement : MonoBehaviour
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
         Time.timeScale = _timeScale;
-        BasicMovement();
+        HorizontalMovement();
 
         Jump();
 
@@ -140,7 +140,7 @@ public class PlayerMovement : MonoBehaviour
         
     }
 
-    #region CollisionCheck
+    #region Collision Check
     private bool IsGrounded() => Physics2D.OverlapCircle(groundCheck.position, 0.25f, groundLayer);
 
     private bool IsWalled() => Physics2D.OverlapCircle(wallCheck.position, 0.01f, wallLayer) 
@@ -148,7 +148,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool TransitionEnter() => Physics2D.OverlapCircle(wallCheck.position, 0.01f, transitionLayer);
     #endregion
-    private void BasicMovement()
+    #region Basic Movement
+    private void HorizontalMovement()
     {
 
         //if player is walljumping, use a slightly different movement mechanic
@@ -165,11 +166,6 @@ public class PlayerMovement : MonoBehaviour
         if (!_wasGrounded && IsGrounded())
         {
             GroundDust();
-        }
-        //fall faster
-        if (_rb.linearVelocityY < FallSpeed())
-        {
-            _rb.linearVelocity = new Vector2(_rb.linearVelocityX, FallSpeed());
         }
         if (xRaw == 0 && IsGrounded())
         {
@@ -224,7 +220,11 @@ public class PlayerMovement : MonoBehaviour
                 _availableJump--;
             }
         }
-        
+        //limit fall speed
+        if (_rb.linearVelocityY < FallSpeed())
+        {
+            _rb.linearVelocity = new Vector2(_rb.linearVelocityX, FallSpeed());
+        }
         //apply downward force for snappier jump feeling
         if(_rb.linearVelocity.y < 0)
         {
@@ -236,10 +236,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
     private float FallSpeed() => Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? _maxFallSpeed * _maxFallSpeedMultiflier : _maxFallSpeed;
-    private void SuperDash()
-    {
-        
-    }
     //flip player's entire model horizontally when moving opposite direction
     private void Flip()
     {
@@ -251,6 +247,8 @@ public class PlayerMovement : MonoBehaviour
             transform.localScale = localScale;
         }
     }
+    #endregion
+    #region Dash
     private void Dash()
     {
         //dash is refilled when player touches ground
@@ -305,6 +303,8 @@ public class PlayerMovement : MonoBehaviour
         _isDashing = false;
         _superDashCounter = _superDashTime;
     }
+    #endregion
+    #region Wall Tech
     private void WallSlide()
     {
         if (IsWalled() && !IsGrounded() && xRaw != 0 && _rb.linearVelocityY <= 0)
@@ -354,6 +354,8 @@ public class PlayerMovement : MonoBehaviour
     {
         _isWallJumping = false;
     }
+    #endregion
+    #region Particles
     private void WallDust()
     {
         var main = slideParticle.main;
@@ -390,10 +392,7 @@ public class PlayerMovement : MonoBehaviour
         if (xRaw == 0 && yRaw != 0) return 0;
         return xRaw != 0 ? xRaw : _isFacingRight ? 1 : -1;
     }
-    private void Freeze()
-    {
-        _pendingFreezeDuration = _freezeDuration;
-    }
+    #endregion
     private IEnumerator ExecuteFreeze()
     {
         _isFrozen = true;
@@ -403,23 +402,6 @@ public class PlayerMovement : MonoBehaviour
         Time.timeScale = original;
         _pendingFreezeDuration = 0;
         _isFrozen = false;
-    }
-    //if press down, fall speed is multiplied with a multiplier
-
-    private void moveCamera() {
-        if (TransitionEnter()) {
-            
-        }
-    }
-    private IEnumerator ScreenTransition() {
-        float elapsedTime = 0f;
-        float originalTimeScale = Time.timeScale;
-        Time.timeScale = 0f;
-        
-
-        Time.timeScale = originalTimeScale;
-        elapsedTime += Time.fixedDeltaTime;
-        yield return null;
     }
 
 }
