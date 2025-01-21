@@ -119,8 +119,6 @@ public class PlayerMovement : MonoBehaviour
 
         Dash();
 
-        SuperDash();
-
         if (!_isWallJumping)
         {
             Flip();
