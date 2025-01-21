@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     #region Variables
-
+    #region Fundementals
     [Header("Fundementals")]
     private Rigidbody2D _rb;
     private bool _isFacingRight = true;
@@ -15,7 +15,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
     [SerializeField] private float _acceleration;
     [SerializeField] private float _decceleration;
-
+    [SerializeField] private float _timeScale = .9f;
+    #endregion
+    #region Dash
     [Space]
     [Header("Dash")]
     private bool _canDash;
@@ -28,7 +30,8 @@ public class PlayerMovement : MonoBehaviour
     private float _superDashCounter;
     private float _superDashTime = 0.2f;
     private Vector2 _dashDirection;
-
+    #endregion
+    #region Jump
     [Space]
     [Header("Jump")]
     [SerializeField] private bool canDoubleJump;
@@ -39,10 +42,10 @@ public class PlayerMovement : MonoBehaviour
     private float _coyoteTimeCounter;
     private float _fallMultiplier = 7f;
     [SerializeField] private float _jumpVelocityFallOff = 8f;
-
     [SerializeField] private int _extraJump = 1;
     private int _availableJump;
-
+    #endregion
+    #region WallTech
     [Space]
     [Header("Wall Tech")]
     [SerializeField] private bool _isWallSliding;
@@ -54,7 +57,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _wallJumpingDuration = 0.2f;
     [SerializeField] private float _wallJumpingLerp = 10f;
     private Vector2 _wallJumpingPower = new Vector2(6f, 15f);
-
+    #endregion
+    #region Collisions
     [Space]
     [Header("Collisions")]
     [SerializeField] private Transform groundCheck;
@@ -63,7 +67,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private Transform middleCheck;
     [SerializeField] private LayerMask transitionLayer;
-
+    #endregion
+    #region Misc
     [Space]
     [Header("Misc")]
     private float _freezeDuration = 0.05f;
@@ -78,9 +83,8 @@ public class PlayerMovement : MonoBehaviour
     private float xRaw;
     private float yRaw;
     private float x;
-    private float y;
-    [SerializeField] private float _timeScale = 1f;
-
+    #endregion
+    #region Camera
     [Space]
     [Header("Camera")]
     public ShockwaveManager _shockwaveManager;
@@ -88,14 +92,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _shakeDuration = 0.15f;
     [SerializeField] private float _shakeStrength = 0.4f;
     private CinemachineImpulseSource _impulseSource;
-
+    #endregion
     #endregion
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
     }
-
     private void Update() //update sẽ chạy mỗi frame
     {
         if (_isDashing)
