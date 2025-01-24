@@ -330,7 +330,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         _shockwaveManager.CallShockwave();
-        flashEffect.CallFlash(1f, 0.1f, _dashColor);
+        flashEffect.CallFlash(1f, 0.3f, _dashColor);
         CameraShake.instance.Shake(_impulseSource);
         _canDash = false;
         _isDashing = true;
