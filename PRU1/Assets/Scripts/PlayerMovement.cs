@@ -143,7 +143,7 @@ public class PlayerMovement : MonoBehaviour
         JumpInput();
         DashInput();
 
-        
+
     }
     private void FixedUpdate() //update mỗi số frame (2-3-4 frame) ít độc lập frame hơn => ít responsive hơn
     {
@@ -157,10 +157,9 @@ public class PlayerMovement : MonoBehaviour
 
         Dash();
 
-        if (!_isWallJumping)
-        {
+        if ((xRaw < 0 && _rb.linearVelocityX < 0) || (xRaw > 0 && _rb.linearVelocityX > 0))
             Flip();
-        }
+
 
         WallSlide();
 
@@ -175,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.01f, _wallLayer)
                             && !Physics2D.OverlapCircle(_middleCheck.position, 0.01f, _wallLayer);
-    
+
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.gameObject.CompareTag("Killable"))
@@ -195,9 +194,9 @@ public class PlayerMovement : MonoBehaviour
         {
             _rb.linearVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
         }
-        else
+        else if (!IsGrounded())
         {
-            var wallJumpingVelocity = new Vector2(_wallJumpingDirection * _speed, _rb.linearVelocityY);
+            var wallJumpingVelocity = _rb.linearVelocity;
             var playerVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
             _rb.linearVelocity = Vector2.Lerp(wallJumpingVelocity, playerVelocity, _wallJumpingLerp * Time.fixedDeltaTime);
         }
@@ -207,10 +206,11 @@ public class PlayerMovement : MonoBehaviour
             if (!_canDash || _availableJump <= 0)
                 flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
         }
-        if (xRaw == 0 && IsGrounded())
-        {
-            _rb.linearVelocity = Vector2.Lerp(_rb.linearVelocity, new Vector2(0, _rb.linearVelocityY), _decceleration * Time.fixedDeltaTime);
-        }
+        // if (xRaw == 0 && _rb.linearVelocityX != 0 && IsGrounded())
+        // {
+        //     Vector2 force = Vector2.right * (_isFacingRight ? -1 : 1) * _decceleration;
+        //     _rb.linearVelocityX += _decceleration;
+        // }
 
     }
     private void JumpInput()
@@ -378,13 +378,12 @@ public class PlayerMovement : MonoBehaviour
     }
     private void WallJump()
     {
-
+        
         if (IsWalled() && !IsGrounded())
         {
             _isWallJumping = false;
             _wallJumpingDirection = -transform.localScale.x;
             _wallJumpingCounter = _wallJumpingTime;
-
             CancelInvoke(nameof(StopWallJumping));
         }
         else
@@ -392,10 +391,14 @@ public class PlayerMovement : MonoBehaviour
             _wallJumpingCounter -= Time.fixedDeltaTime;
         }
 
-        if ((_jumpButtonPressed && _wallJumpingCounter > 0f) || (_jumpBufferTimeCounter > 0f && _wallJumpingCounter > 0f))
+        if ((_jumpButtonPressed && _wallJumpingCounter >= 0f) || (_jumpBufferTimeCounter > 0f && _wallJumpingCounter >= 0f))
         {
             _isWallJumping = true;
-            _rb.linearVelocity = new Vector2(_wallJumpingDirection * _speed, _jumpSpeed);
+            _rb.linearVelocity = new Vector2(0f, 0f);
+            Vector2 force = Vector2.right * _speed * _wallJumpingDirection + Vector2.up * _jumpSpeed;
+            DisableMovement(0.1f);
+            _rb.linearVelocity += force;
+
             _wallJumpingCounter = 0f;
             _jumpBufferTimeCounter = 0f;
             if (_wallJumpingDirection != transform.localScale.x)
@@ -405,8 +408,12 @@ public class PlayerMovement : MonoBehaviour
                 localScale.x *= -1f;
                 transform.localScale = localScale;
             }
-
+            if (IsGrounded() || IsWalled())
+            {
+                _isWallJumping = false;
+            }
             Invoke(nameof(StopWallJumping), _wallJumpingDuration);
+
             _jumpButtonPressed = false;
         }
     }
@@ -492,5 +499,15 @@ public class PlayerMovement : MonoBehaviour
         // Bounds bounds = other.bounds;
         // float dir = Mathf.Min(this.transform.position.x - bounds.max.x, this.transform.position.x - bounds.min.x);
         // transform.position += new Vector3(dir, 0f);
+    }
+    private void DisableMovement(float seconds)
+    {
+        StartCoroutine(Disable(seconds));
+    }
+    private IEnumerator Disable(float seconds)
+    {
+        _active = false;
+        yield return new WaitForSeconds(seconds);
+        _active = true;
     }
 }
