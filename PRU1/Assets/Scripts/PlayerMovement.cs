@@ -143,7 +143,7 @@ public class PlayerMovement : MonoBehaviour
         JumpInput();
         DashInput();
 
-        _wasGrounded = IsGrounded();
+        
     }
     private void FixedUpdate() //update mỗi số frame (2-3-4 frame) ít độc lập frame hơn => ít responsive hơn
     {
@@ -167,7 +167,7 @@ public class PlayerMovement : MonoBehaviour
         WallJump();
 
         WallDust();
-
+        _wasGrounded = IsGrounded();
 
     }
     #region Collision Check
