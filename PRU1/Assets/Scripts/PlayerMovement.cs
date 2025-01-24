@@ -1,4 +1,5 @@
 using System.Collections;
+using System.ComponentModel.Design;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ public class PlayerMovement : MonoBehaviour
     #region Fundementals
     [Header("Fundementals")]
     private Rigidbody2D _rb;
+    private Collider2D _collider;
     private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _currentSpeed;
@@ -16,6 +18,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _acceleration;
     [SerializeField] private float _decceleration;
     [SerializeField] private float _timeScale = .9f;
+    [SerializeField] private bool _active;
+    private Vector2 _respawnPoint;
+    
     #endregion
     #region Dash
     [Space]
@@ -30,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
     private float _superDashCounter;
     private float _superDashTime = 0.2f;
     private Vector2 _dashDirection;
+    private bool _dashButtonPressed;
     #endregion
     #region Jump
     [Space]
@@ -38,12 +44,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _jumpSpeed = 15f;
     [SerializeField] private float _coyoteTime = 0.2f;
     [SerializeField] private float _jumpBufferTime = 0.2f;
-    private float _jumpBufferTimeCounter;
-    private float _coyoteTimeCounter;
+    [SerializeField] private float _jumpBufferTimeCounter;
+    [SerializeField] private float _coyoteTimeCounter;
     private float _fallMultiplier = 7f;
     [SerializeField] private float _jumpVelocityFallOff = 8f;
     [SerializeField] private int _extraJump = 1;
     private int _availableJump;
+    private bool _jumpButtonPressed;
     #endregion
     #region WallTech
     [Space]
@@ -66,7 +73,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private Transform middleCheck;
-    [SerializeField] private LayerMask transitionLayer;
+    [SerializeField] private LayerMask _killable;
     #endregion
     #region Misc
     [Space]
@@ -79,6 +86,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private ParticleSystem slideParticle;
     [SerializeField] private ParticleSystem groundParticle;
     [SerializeField] private ParticleSystem dashParticle;
+    public FlashEffect flashEffect;
     private float _dashDustSpeed = 5f;
     private float xRaw;
     private float yRaw;
@@ -93,18 +101,34 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _shakeStrength = 0.4f;
     private CinemachineImpulseSource _impulseSource;
     #endregion
+    #region Colors
+    [Space]
+    [Header("Colors")]
+    [ColorUsage(true, true)]
+    [SerializeField] private Color _refillColor;
+    [ColorUsage(true, true)]
+    [SerializeField] private Color _dashColor;
+    [ColorUsage(true, true)]
+    [SerializeField] private Color _doubleJumpColor;
+    [ColorUsage(true, true)]
+    [SerializeField] private Color _deathColor;
+    #endregion
     #endregion
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
+        _collider = GetComponent<Collider2D>();
+        _active = true;
+        SetRespawnPoint(transform.position);
     }
     private void Update() //update sẽ chạy mỗi frame
     {
-        if (_isDashing)
+        if (_isDashing || !_active)
         {
             return;
         }
+
         if (_pendingFreezeDuration > 0 && !_isFrozen)
         {
             StartCoroutine(ExecuteFreeze());
@@ -113,6 +137,18 @@ public class PlayerMovement : MonoBehaviour
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
         Time.timeScale = _timeScale;
+        
+        JumpInput();
+        DashInput();
+
+        _wasGrounded = IsGrounded();
+    }
+    private void FixedUpdate() //update mỗi số frame (2-3-4 frame) ít độc lập frame hơn => ít responsive hơn
+    {
+        if (_isDashing)
+        {
+            return;
+        }
         HorizontalMovement();
 
         Jump();
@@ -130,24 +166,23 @@ public class PlayerMovement : MonoBehaviour
 
         WallDust();
 
-        _wasGrounded = IsGrounded();
-    }
-    private void FixedUpdate() //update mỗi số frame (2-3-4 frame) ít độc lập frame hơn => ít responsive hơn
-    {
-        if (_isDashing)
-        {
-            return;
-        }
-        
-    }
 
+    }
     #region Collision Check
     private bool IsGrounded() => Physics2D.OverlapCircle(groundCheck.position, 0.25f, groundLayer);
 
-    private bool IsWalled() => Physics2D.OverlapCircle(wallCheck.position, 0.01f, wallLayer) 
+    private bool IsWalled() => Physics2D.OverlapCircle(wallCheck.position, 0.01f, wallLayer)
                             && !Physics2D.OverlapCircle(middleCheck.position, 0.01f, wallLayer);
 
-    private bool TransitionEnter() => Physics2D.OverlapCircle(wallCheck.position, 0.01f, transitionLayer);
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.CompareTag("Killable"))
+        {
+            flashEffect.CallFlash(0.5f, 0.2f, _deathColor);
+
+        }
+    }
+
     #endregion
     #region Basic Movement
     private void HorizontalMovement()
@@ -167,6 +202,8 @@ public class PlayerMovement : MonoBehaviour
         if (!_wasGrounded && IsGrounded())
         {
             GroundDust();
+            if (!_canDash || _availableJump <= 0)
+                flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
         }
         if (xRaw == 0 && IsGrounded())
         {
@@ -174,9 +211,12 @@ public class PlayerMovement : MonoBehaviour
         }
 
     }
+    private void JumpInput()
+    {
+        if(Input.GetButtonDown("Jump")) _jumpButtonPressed = true;
+    }
     private void Jump()
     {
-        var main = groundParticle.main;
         //initialize jump buffering and coyote time
         if (IsGrounded())
         {
@@ -186,40 +226,47 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            _coyoteTimeCounter -= Time.deltaTime;
+            _coyoteTimeCounter -= Time.fixedDeltaTime;
         }
         //also activate buffer is player is dashing
-        if (Input.GetButtonDown("Jump") || (Input.GetButtonDown("Jump") && _isDashing))
+        if (_jumpButtonPressed)
         {
             _jumpBufferTimeCounter = _jumpBufferTime;
         }
         else
         {
-            _jumpBufferTimeCounter -= Time.deltaTime;
+            _jumpBufferTimeCounter -= Time.fixedDeltaTime;
         }
         //starts ground jump
         if (_jumpBufferTimeCounter > 0f && _coyoteTimeCounter > 0f)
         {
             GroundDust();
+            
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
+            
             _jumpBufferTimeCounter = 0f;
             //if player touches wall, use wall jump instead 
             if (!IsWalled() && _coyoteTimeCounter <= 0f)
             {
+                
                 _availableJump--;
             }
+            _coyoteTimeCounter = 0f;
+            _jumpButtonPressed = false;
         }
         //double jump condition
-        else if (Input.GetButtonDown("Jump") && _coyoteTimeCounter <= 0f && _availableJump > 0 && canDoubleJump && _wallJumpingCounter <= 0f)
+        else if (_jumpButtonPressed && _coyoteTimeCounter <= 0f && _availableJump > 0 && canDoubleJump && _wallJumpingCounter <= 0f)
         {
 
             GroundDust();
+            flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
             if (!IsWalled())
             {
                 _availableJump--;
             }
+            _jumpButtonPressed = false;
         }
         //limit fall speed
         if (_rb.linearVelocityY < FallSpeed())
@@ -227,13 +274,13 @@ public class PlayerMovement : MonoBehaviour
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, FallSpeed());
         }
         //apply downward force for snappier jump feeling
-        if(_rb.linearVelocity.y < 0)
+        if (_rb.linearVelocity.y < 0)
         {
-            _rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (_fallMultiplier - 1) * Time.deltaTime;
-        } else if (!Input.GetButton("Jump") || _rb.linearVelocityY > _jumpVelocityFallOff)
+            _rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (_fallMultiplier - 1) * Time.fixedDeltaTime;
+        }
+        else if (!Input.GetButton("Jump") || _rb.linearVelocityY > _jumpVelocityFallOff)
         {
-            _rb.linearVelocity += _fallMultiplier * Physics2D.gravity.y * Vector2.up * Time.deltaTime;
-            _coyoteTimeCounter = 0f;
+            _rb.linearVelocity += _fallMultiplier * Physics2D.gravity.y * Vector2.up * Time.fixedDeltaTime;
         }
     }
     private float FallSpeed() => Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? _maxFallSpeed * _maxFallSpeedMultiflier : _maxFallSpeed;
@@ -250,6 +297,10 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
     #region Dash
+    private void DashInput()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftShift)) _dashButtonPressed = true;
+    }
     private void Dash()
     {
         //dash is refilled when player touches ground
@@ -257,41 +308,46 @@ public class PlayerMovement : MonoBehaviour
         {
             _canDash = true;
         }
-        _superDashCounter -= Time.deltaTime;
-        if (Input.GetKeyDown(KeyCode.LeftShift) && _canDash)
+        if (_dashButtonPressed && _canDash)
         {
-            
-            DashDust(DashDustDirectionX(), yRaw);
             StartCoroutine(ExecuteDash());
-
+            _dashButtonPressed = false;
         }
     }
     private IEnumerator ExecuteDash()
     {
         if (_freezeFrame)
         {
-            StartCoroutine(ExecuteFreeze());
+            _isFrozen = true;
+            var original = Time.timeScale;
+            Time.timeScale = 0f;
+            yield return new WaitForSecondsRealtime(_freezeDuration);
+            Time.timeScale = original;
+            _pendingFreezeDuration = 0;
+            _isFrozen = false;
         }
 
         _shockwaveManager.CallShockwave();
+        flashEffect.CallFlash(1f, 0.1f, _dashColor);
         CameraShake.instance.Shake(_impulseSource);
         _canDash = false;
         _isDashing = true;
         float originalGravity = _rb.gravityScale;
         //disable gravity for total straight dash movement
         _rb.gravityScale = 0f;
-
+        
         _dashDirection = new Vector2(xRaw, yRaw).normalized * _dashingPower;
-        if (_dashDirection == Vector2.zero) {
+        if (_dashDirection == Vector2.zero)
+        {
             _dashDirection = new Vector2(transform.localScale.x * _dashingPower, 0);
         }
         _rb.linearVelocity = _dashDirection;
-        
+
         float yRec = yRaw;
         // //draw trial
         tr.emitting = true;
+        DashDust(DashDustDirectionX(), yRaw);
 
-        
 
         yield return new WaitForSeconds(_dashingTime * _dashNormalizer);
         tr.emitting = false;
@@ -331,10 +387,10 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            _wallJumpingCounter -= Time.deltaTime;
+            _wallJumpingCounter -= Time.fixedDeltaTime;
         }
 
-        if ((Input.GetButtonDown("Jump") && _wallJumpingCounter > 0f) || _jumpBufferTimeCounter > 0f && _wallJumpingCounter > 0f)
+        if ((_jumpButtonPressed && _wallJumpingCounter > 0f) || (_jumpBufferTimeCounter > 0f && _wallJumpingCounter > 0f))
         {
             _isWallJumping = true;
             _rb.linearVelocity = new Vector2(_wallJumpingDirection * _speed, _jumpSpeed);
@@ -349,6 +405,7 @@ public class PlayerMovement : MonoBehaviour
             }
 
             Invoke(nameof(StopWallJumping), _wallJumpingDuration);
+            _jumpButtonPressed = false;
         }
     }
     private void StopWallJumping()
@@ -404,5 +461,28 @@ public class PlayerMovement : MonoBehaviour
         _pendingFreezeDuration = 0;
         _isFrozen = false;
     }
-
+    #region Death
+    private void MiniJump()
+    {
+        _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed / 2);
+    }
+    public void Die()
+    {
+        _active = false;
+        _collider.enabled = false;
+        MiniJump();
+        StartCoroutine(Respawn());
+    }
+    private IEnumerator Respawn()
+    {
+        yield return new WaitForSeconds(1f);
+        transform.position = _respawnPoint;
+        _active = true;
+        _collider.enabled = true;
+    }
+    public void SetRespawnPoint(Vector2 position)
+    {
+        _respawnPoint = position;
+    }
+    #endregion
 }
