@@ -20,7 +20,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _timeScale = .9f;
     [SerializeField] private bool _active;
     private Vector2 _respawnPoint;
-    
+
     #endregion
     #region Dash
     [Space]
@@ -68,12 +68,14 @@ public class PlayerMovement : MonoBehaviour
     #region Collisions
     [Space]
     [Header("Collisions")]
-    [SerializeField] private Transform groundCheck;
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private Transform wallCheck;
-    [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private Transform middleCheck;
+    [SerializeField] private Transform _groundCheck;
+    [SerializeField] private LayerMask _groundLayer;
+    [SerializeField] private Transform _wallCheck;
+    [SerializeField] private LayerMask _wallLayer;
+    [SerializeField] private Transform _middleCheck;
     [SerializeField] private LayerMask _killable;
+    [SerializeField] private Transform _cornerCheckLeft;
+    [SerializeField] private Transform _cornerCheckRight;
     #endregion
     #region Misc
     [Space]
@@ -137,7 +139,7 @@ public class PlayerMovement : MonoBehaviour
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
         Time.timeScale = _timeScale;
-        
+
         JumpInput();
         DashInput();
 
@@ -169,11 +171,11 @@ public class PlayerMovement : MonoBehaviour
 
     }
     #region Collision Check
-    private bool IsGrounded() => Physics2D.OverlapCircle(groundCheck.position, 0.25f, groundLayer);
+    private bool IsGrounded() => Physics2D.OverlapCircle(_groundCheck.position, 0.25f, _groundLayer);
 
-    private bool IsWalled() => Physics2D.OverlapCircle(wallCheck.position, 0.01f, wallLayer)
-                            && !Physics2D.OverlapCircle(middleCheck.position, 0.01f, wallLayer);
-
+    private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.01f, _wallLayer)
+                            && !Physics2D.OverlapCircle(_middleCheck.position, 0.01f, _wallLayer);
+    
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.gameObject.CompareTag("Killable"))
@@ -213,7 +215,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void JumpInput()
     {
-        if(Input.GetButtonDown("Jump")) _jumpButtonPressed = true;
+        if (Input.GetButtonDown("Jump")) _jumpButtonPressed = true;
     }
     private void Jump()
     {
@@ -241,14 +243,14 @@ public class PlayerMovement : MonoBehaviour
         if (_jumpBufferTimeCounter > 0f && _coyoteTimeCounter > 0f)
         {
             GroundDust();
-            
+
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
-            
+
             _jumpBufferTimeCounter = 0f;
             //if player touches wall, use wall jump instead 
             if (!IsWalled() && _coyoteTimeCounter <= 0f)
             {
-                
+
                 _availableJump--;
             }
             _coyoteTimeCounter = 0f;
@@ -335,7 +337,7 @@ public class PlayerMovement : MonoBehaviour
         float originalGravity = _rb.gravityScale;
         //disable gravity for total straight dash movement
         _rb.gravityScale = 0f;
-        
+
         _dashDirection = new Vector2(xRaw, yRaw).normalized * _dashingPower;
         if (_dashDirection == Vector2.zero)
         {
@@ -485,4 +487,10 @@ public class PlayerMovement : MonoBehaviour
         _respawnPoint = position;
     }
     #endregion
+    public void CornerCorrection(Collider2D other)
+    {
+        // Bounds bounds = other.bounds;
+        // float dir = Mathf.Min(this.transform.position.x - bounds.max.x, this.transform.position.x - bounds.min.x);
+        // transform.position += new Vector3(dir, 0f);
+    }
 }
