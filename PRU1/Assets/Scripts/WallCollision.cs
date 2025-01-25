@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class WallCollision : MonoBehaviour
 {
-    public bool isWalled;
+    
     [SerializeField] private GameObject _player;
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -10,7 +10,7 @@ public class WallCollision : MonoBehaviour
         {
             var player = _player.GetComponent<PlayerMovement>();
             
-            isWalled = true;
+            player.isWalled = true;
         }
     }
     private void OnTriggerExit2D(Collider2D other)
@@ -19,7 +19,7 @@ public class WallCollision : MonoBehaviour
         {
             var player = _player.GetComponent<PlayerMovement>();
             
-            isWalled = false;
+            player.isWalled = false;
         }
     }
 }

@@ -17,9 +17,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
     [SerializeField] private float _acceleration;
     [SerializeField] private float _decceleration;
-    [SerializeField] private float _timeScale = .9f;
-    [SerializeField] private bool _active;
+    public float timeScale = .9f;
+    public bool active;
     private Vector2 _respawnPoint;
+    public bool _isGrounded;
+    public bool isWalled;
 
     #endregion
     #region Dash
@@ -31,8 +33,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _dashingTime = 0.2f;
     private float _dashNormalizer = 0.707f;
     [SerializeField] private bool _freezeFrame = true;
-    private float _dashMomentum = 15f;
-    private float _superDashCounter;
     private float _superDashTime = 0.2f;
     private Vector2 _dashDirection;
     private bool _dashButtonPressed;
@@ -61,9 +61,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _wallJumpingTime = 0.2f;
     private float _wallJumpingCounter;
     private float _wallJumpingDirection;
-    [SerializeField] private float _wallJumpingDuration = 0.2f;
     [SerializeField] private float _wallJumpingLerp = 10f;
-    private Vector2 _wallJumpingPower = new Vector2(6f, 15f);
     #endregion
     #region Collisions
     [Space]
@@ -121,28 +119,24 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
         _collider = GetComponent<Collider2D>();
-        _active = true;
+        active = true;
         SetRespawnPoint(transform.position);
+        Time.timeScale = timeScale;
     }
     private void Update() //update sẽ chạy mỗi frame
     {
-        if (_isDashing || !_active)
+        if (_isDashing || !active)
         {
             return;
-        }
-
-        if (_pendingFreezeDuration > 0 && !_isFrozen)
-        {
-            StartCoroutine(ExecuteFreeze());
         }
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-        Time.timeScale = _timeScale;
+        
 
         JumpInput();
         DashInput();
-
+        _isGrounded = IsGrounded();
 
     }
     private void FixedUpdate() //update mỗi số frame (2-3-4 frame) ít độc lập frame hơn => ít responsive hơn
@@ -157,7 +151,7 @@ public class PlayerMovement : MonoBehaviour
 
         Dash();
 
-        if ((xRaw < 0 && _rb.linearVelocityX < 0) || (xRaw > 0 && _rb.linearVelocityX > 0))
+        //if ((xRaw < 0 && _rb.linearVelocityX < 0) || (xRaw > 0 && _rb.linearVelocityX > 0))
             Flip();
 
 
@@ -172,8 +166,7 @@ public class PlayerMovement : MonoBehaviour
     #region Collision Check
     private bool IsGrounded() => Physics2D.OverlapCircle(_groundCheck.position, 0.25f, _groundLayer);
 
-    private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.01f, _wallLayer)
-                            && !Physics2D.OverlapCircle(_middleCheck.position, 0.01f, _wallLayer);
+    private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.01f, _wallLayer);
 
     private void OnCollisionEnter2D(Collision2D other)
     {
@@ -190,7 +183,7 @@ public class PlayerMovement : MonoBehaviour
     {
 
         //if player is walljumping, use a slightly different movement mechanic
-        if (!_isWallJumping)
+        if (!_isWallJumping || IsGrounded())
         {
             _rb.linearVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
         }
@@ -204,6 +197,7 @@ public class PlayerMovement : MonoBehaviour
         {
             GroundDust();
             if (!_canDash || _availableJump <= 0)
+            if (flashEffect != null)
                 flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
         }
         // if (xRaw == 0 && _rb.linearVelocityX != 0 && IsGrounded())
@@ -261,7 +255,7 @@ public class PlayerMovement : MonoBehaviour
         {
 
             GroundDust();
-            flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
+            if (flashEffect != null) flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
             if (!IsWalled())
@@ -289,7 +283,7 @@ public class PlayerMovement : MonoBehaviour
     //flip player's entire model horizontally when moving opposite direction
     private void Flip()
     {
-        if (_isFacingRight && xRaw < 0f || !_isFacingRight && xRaw > 0f)
+        if (_isFacingRight && _rb.linearVelocityX < 0f || !_isFacingRight && _rb.linearVelocityX > 0f)
         {
             Vector3 localScale = transform.localScale;
             _isFacingRight = !_isFacingRight;
@@ -329,9 +323,9 @@ public class PlayerMovement : MonoBehaviour
             _isFrozen = false;
         }
 
-        _shockwaveManager.CallShockwave();
-        flashEffect.CallFlash(1f, 0.3f, _dashColor);
-        CameraShake.instance.Shake(_impulseSource);
+        if (_shockwaveManager != null) _shockwaveManager.CallShockwave();
+        if (flashEffect != null) flashEffect.CallFlash(1f, 0.3f, _dashColor);
+        if (cameraShake != null) CameraShake.instance.Shake(_impulseSource);
         _canDash = false;
         _isDashing = true;
         float originalGravity = _rb.gravityScale;
@@ -347,12 +341,12 @@ public class PlayerMovement : MonoBehaviour
 
         float yRec = yRaw;
         // //draw trial
-        tr.emitting = true;
+        if (tr != null) tr.emitting = true;
         DashDust(DashDustDirectionX(), yRaw);
 
 
         yield return new WaitForSeconds(_dashingTime * _dashNormalizer);
-        tr.emitting = false;
+        if (tr != null) tr.emitting = false;
         if (yRec > 0)
         {
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, 0f);
@@ -360,7 +354,6 @@ public class PlayerMovement : MonoBehaviour
         _rb.gravityScale = originalGravity;
         //rb.linearVelocity = new Vector2(0f, 0f);
         _isDashing = false;
-        _superDashCounter = _superDashTime;
     }
     #endregion
     #region Wall Tech
@@ -384,14 +377,14 @@ public class PlayerMovement : MonoBehaviour
             _isWallJumping = false;
             _wallJumpingDirection = -transform.localScale.x;
             _wallJumpingCounter = _wallJumpingTime;
-            CancelInvoke(nameof(StopWallJumping));
+            //CancelInvoke(nameof(StopWallJumping));
         }
         else
         {
             _wallJumpingCounter -= Time.fixedDeltaTime;
         }
 
-        if ((_jumpButtonPressed && _wallJumpingCounter >= 0f) || (_jumpBufferTimeCounter > 0f && _wallJumpingCounter >= 0f))
+        if (_jumpBufferTimeCounter > 0f && _wallJumpingCounter >= 0f)
         {
             _isWallJumping = true;
             _rb.linearVelocity = new Vector2(0f, 0f);
@@ -412,7 +405,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 _isWallJumping = false;
             }
-            Invoke(nameof(StopWallJumping), _wallJumpingDuration);
+            // Invoke(nameof(StopWallJumping), _wallJumpingDuration);
 
             _jumpButtonPressed = false;
         }
@@ -425,6 +418,7 @@ public class PlayerMovement : MonoBehaviour
     #region Particles
     private void WallDust()
     {
+        if (slideParticle == null) return;
         var main = slideParticle.main;
         if (IsWalled() && !IsGrounded())
         {
@@ -437,10 +431,12 @@ public class PlayerMovement : MonoBehaviour
     }
     private void GroundDust()
     {
+        if (slideParticle == null) return;
         groundParticle.Play();
     }
     private void DashDust(float xRaw, float yRaw)
     {
+        if (slideParticle == null) return;
         var velocityDir = dashParticle.velocityOverLifetime;
         if (xRaw != 0 && yRaw != 0)
         {
@@ -477,7 +473,7 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Die()
     {
-        _active = false;
+        active = false;
         _collider.enabled = false;
         MiniJump();
         StartCoroutine(Respawn());
@@ -486,7 +482,7 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         transform.position = _respawnPoint;
-        _active = true;
+        active = true;
         _collider.enabled = true;
     }
     public void SetRespawnPoint(Vector2 position)
@@ -506,8 +502,8 @@ public class PlayerMovement : MonoBehaviour
     }
     private IEnumerator Disable(float seconds)
     {
-        _active = false;
+        active = false;
         yield return new WaitForSeconds(seconds);
-        _active = true;
+        active = true;
     }
 }
