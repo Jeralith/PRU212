@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 public class PauseMenu : MonoBehaviour
 {
     public GameObject pauseMenu;
+    public GameObject exitConfirm;
     public GameObject player;
     private PlayerMovement _player;
     public bool isPaused;
@@ -42,8 +43,9 @@ public class PauseMenu : MonoBehaviour
         //_player.active = true;
     }
 
-    public void QuitGame()
+    public void QuitConfirm()
     {
-        Application.Quit();
+        exitConfirm.SetActive(true);        
+        pauseMenu.SetActive(false);
     }
 }
