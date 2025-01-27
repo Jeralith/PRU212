@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Fundementals")]
     private Rigidbody2D _rb;
     private Collider2D _collider;
+    [SerializeField] Collider2D _groundCollider;
     private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _currentSpeed;
@@ -151,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
 
         Dash();
 
-        //if ((xRaw < 0 && _rb.linearVelocityX < 0) || (xRaw > 0 && _rb.linearVelocityX > 0))
+        if (!_isWallJumping)
             Flip();
 
 
@@ -166,7 +167,7 @@ public class PlayerMovement : MonoBehaviour
     #region Collision Check
     private bool IsGrounded() => Physics2D.OverlapCircle(_groundCheck.position, 0.25f, _groundLayer);
 
-    private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.01f, _wallLayer);
+    private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.1f, _wallLayer);
 
     private void OnCollisionEnter2D(Collision2D other)
     {
@@ -283,7 +284,7 @@ public class PlayerMovement : MonoBehaviour
     //flip player's entire model horizontally when moving opposite direction
     private void Flip()
     {
-        if (_isFacingRight && _rb.linearVelocityX < 0f || !_isFacingRight && _rb.linearVelocityX > 0f)
+        if (_isFacingRight && xRaw < 0f || !_isFacingRight && xRaw > 0f)
         {
             Vector3 localScale = transform.localScale;
             _isFacingRight = !_isFacingRight;
@@ -377,7 +378,7 @@ public class PlayerMovement : MonoBehaviour
             _isWallJumping = false;
             _wallJumpingDirection = -transform.localScale.x;
             _wallJumpingCounter = _wallJumpingTime;
-            //CancelInvoke(nameof(StopWallJumping));
+            CancelInvoke(nameof(StopWallJumping));
         }
         else
         {
@@ -388,7 +389,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _isWallJumping = true;
             _rb.linearVelocity = new Vector2(0f, 0f);
-            Vector2 force = Vector2.right * _speed * _wallJumpingDirection + Vector2.up * _jumpSpeed;
+            Vector2 force = Vector2.right * _speed * 1.5f * _wallJumpingDirection + Vector2.up * _jumpSpeed;
             DisableMovement(0.1f);
             _rb.linearVelocity += force;
 
@@ -405,7 +406,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 _isWallJumping = false;
             }
-            // Invoke(nameof(StopWallJumping), _wallJumpingDuration);
+            Invoke(nameof(StopWallJumping), 0.3f);
 
             _jumpButtonPressed = false;
         }
@@ -475,6 +476,7 @@ public class PlayerMovement : MonoBehaviour
     {
         active = false;
         _collider.enabled = false;
+        _groundCollider.GetComponent<Collider2D>().enabled = false;
         MiniJump();
         StartCoroutine(Respawn());
     }
@@ -484,6 +486,7 @@ public class PlayerMovement : MonoBehaviour
         transform.position = _respawnPoint;
         active = true;
         _collider.enabled = true;
+        _groundCollider.GetComponent<Collider2D>().enabled = true;
     }
     public void SetRespawnPoint(Vector2 position)
     {

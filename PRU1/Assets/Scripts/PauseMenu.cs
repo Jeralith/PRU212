@@ -30,9 +30,9 @@ public class PauseMenu : MonoBehaviour
     public void PauseGame()
     {
         pauseMenu.SetActive(true);
-        Time.timeScale = 0f;
+        Time.timeScale = 0.2f;
         isPaused = true;
-        //_player.active = false;
+        _player.active = false;
         
     }
     public void ResumeGame()
@@ -40,7 +40,7 @@ public class PauseMenu : MonoBehaviour
         pauseMenu.SetActive(false);
         Time.timeScale = _player.timeScale;
         isPaused = false;
-        //_player.active = true;
+        _player.active = true;
     }
 
     public void QuitConfirm()

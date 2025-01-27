@@ -5,21 +5,27 @@ public class Parallax : MonoBehaviour
 {
     
     public GameObject camera;
-    [SerializeField] private float _length, _startPos, _parallaxEffect;
-
+    [SerializeField] private float _lengthX, _lengthY, _startPosX, _startPosY, _parallaxEffectX, _parallaxEffectY;
+    
     void Start()
     {
-        _startPos = transform.position.x;
-        _length = GetComponent<SpriteRenderer>().bounds.size.x;
+        _startPosX = transform.position.x;
+        _lengthX = GetComponent<SpriteRenderer>().bounds.size.x;
+        _lengthY = GetComponent<SpriteRenderer>().bounds.size.y;
     }
 
     void FixedUpdate()
     {
-        float temp = camera.transform.position.x * (1 - _parallaxEffect);
-        float distance = camera.transform.position.x * _parallaxEffect;
+        float tempX = camera.transform.position.x * (1 - _parallaxEffectX);
+        float distanceX = camera.transform.position.x * _parallaxEffectX;
+        float tempY = camera.transform.position.y * (1 - _parallaxEffectY);
+        float distanceY = camera.transform.position.y * _parallaxEffectY;
 
-        transform.position = new Vector3(_startPos + distance, transform.position.y, transform.position.z);
-        if (temp > _startPos + _length) _startPos += _length;
-        else if (temp < _startPos - _length) _startPos -= _length;
+        transform.position = new Vector3(_startPosX + distanceX, _startPosY + distanceY, transform.position.z);
+        if (tempX > _startPosX + _lengthX) _startPosX += _lengthX;
+        else if (tempX < _startPosX - _lengthX) _startPosX -= _lengthX;
+
+        if (tempY > _startPosY + _lengthY) _startPosY += _lengthY;
+        else if (tempY < _startPosY - _lengthY) _startPosY -= _lengthX;
     }
 }
