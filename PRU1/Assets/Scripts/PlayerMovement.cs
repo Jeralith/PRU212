@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.ComponentModel.Design;
 using Unity.Cinemachine;
@@ -117,10 +118,15 @@ public class PlayerMovement : MonoBehaviour
     #region Audio
     [Space]
     [Header("Audio")]
-    [SerializeField] AudioClip deathSoundClip;
-    [SerializeField] AudioClip jumpSoundClip;
-    [SerializeField] AudioClip landSoundClip;
-    [SerializeField] AudioClip dashSoundClip;
+    [SerializeField] private AudioClip deathSoundClip;
+    [SerializeField] private AudioClip jumpSoundClip;
+    [SerializeField] private AudioClip[] landSoundClips;
+    [SerializeField] private AudioClip[] _wallJumpSoundClips;
+    [SerializeField] private AudioClip dashSoundClip;
+    #endregion
+    #region Amimator
+    private bool isSoundCoroutineRunning = false;
+    [SerializeField] private Animator anim;
     #endregion
     #endregion
     private void Awake()
@@ -141,7 +147,7 @@ public class PlayerMovement : MonoBehaviour
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-
+        anim.SetFloat("Speed", Mathf.Abs(_rb.linearVelocityX));
 
         JumpInput();
         DashInput();
@@ -171,9 +177,14 @@ public class PlayerMovement : MonoBehaviour
         WallDust();
         _wasGrounded = IsGrounded();
 
+        if (Mathf.Abs(_rb.linearVelocityX) > 0 && IsGrounded() && !isSoundCoroutineRunning)
+        {
+            StartCoroutine(GroundEffect());
+        }
+
     }
     #region Collision Check
-    private bool IsGrounded() => Physics2D.OverlapCircle(_groundCheck.position, 0.25f, _groundLayer);
+    private bool IsGrounded() => Physics2D.OverlapCircle(_groundCheck.position, 0.15f, _groundLayer);
 
     private bool IsWalled() => Physics2D.OverlapCircle(_wallCheck.position, 0.1f, _wallLayer);
 
@@ -204,7 +215,7 @@ public class PlayerMovement : MonoBehaviour
         }
         if (!_wasGrounded && IsGrounded())
         {
-            if (landSoundClip != null) SFXManager.instance.PlaySFXClip(landSoundClip, transform, 1f);
+            if (landSoundClips != null) SFXManager.instance.PlayRandomSFXClip(landSoundClips, transform, 1f);
             GroundDust();
             if (!_canDash || _availableJump <= 0)
                 if (flashEffect != null)
@@ -217,6 +228,16 @@ public class PlayerMovement : MonoBehaviour
         // }
 
     }
+
+    private IEnumerator GroundEffect()
+    {
+        isSoundCoroutineRunning = true;
+        //GroundDust();
+        if (landSoundClips != null) SFXManager.instance.PlayRandomSFXClip(landSoundClips, transform, 0.8f);
+        yield return new WaitForSeconds(1f / 3f);
+        isSoundCoroutineRunning = false;
+    }
+
     private void JumpInput()
     {
         if (Input.GetButtonDown("Jump")) _jumpButtonPressed = true;
@@ -399,6 +420,7 @@ public class PlayerMovement : MonoBehaviour
         if (_jumpBufferTimeCounter > 0f && _wallJumpingCounter >= 0f)
         {
             _isWallJumping = true;
+            if (_wallJumpSoundClips != null) SFXManager.instance.PlayRandomSFXClip(_wallJumpSoundClips, transform, 1f);
             _rb.linearVelocity = new Vector2(0f, 0f);
             Vector2 force = Vector2.right * _speed * 1.5f * _wallJumpingDirection + Vector2.up * _jumpSpeed;
             DisableMovement(0.1f);
@@ -432,7 +454,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (slideParticle == null) return;
         var main = slideParticle.main;
-        if (IsWalled() && !IsGrounded())
+        if (_isWallSliding)
         {
             main.startColor = Color.white;
         }
