@@ -81,6 +81,11 @@ public class PauseMenu : MonoBehaviour
         //_player.active = false;
 
     }
+    public void Restart()
+    {
+        _player.Die();
+        ResumeGame();
+    }
 
     public void QuitGame()
     {
