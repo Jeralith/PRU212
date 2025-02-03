@@ -114,6 +114,14 @@ public class PlayerMovement : MonoBehaviour
     [ColorUsage(true, true)]
     [SerializeField] private Color _deathColor;
     #endregion
+    #region Audio
+    [Space]
+    [Header("Audio")]
+    [SerializeField] AudioClip deathSoundClip;
+    [SerializeField] AudioClip jumpSoundClip;
+    [SerializeField] AudioClip landSoundClip;
+    [SerializeField] AudioClip dashSoundClip;
+    #endregion
     #endregion
     private void Awake()
     {
@@ -133,7 +141,7 @@ public class PlayerMovement : MonoBehaviour
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-        
+
 
         JumpInput();
         DashInput();
@@ -196,10 +204,11 @@ public class PlayerMovement : MonoBehaviour
         }
         if (!_wasGrounded && IsGrounded())
         {
+            if (landSoundClip != null) SFXManager.instance.PlaySFXClip(landSoundClip, transform, 1f);
             GroundDust();
             if (!_canDash || _availableJump <= 0)
-            if (flashEffect != null)
-                flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
+                if (flashEffect != null)
+                    flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
         }
         // if (xRaw == 0 && _rb.linearVelocityX != 0 && IsGrounded())
         // {
@@ -237,8 +246,8 @@ public class PlayerMovement : MonoBehaviour
         //starts ground jump
         if (_jumpBufferTimeCounter > 0f && _coyoteTimeCounter > 0f)
         {
+            if (jumpSoundClip != null) SFXManager.instance.PlaySFXClip(jumpSoundClip, transform, 1f);
             GroundDust();
-
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
 
             _jumpBufferTimeCounter = 0f;
@@ -254,8 +263,9 @@ public class PlayerMovement : MonoBehaviour
         //double jump condition
         else if (_jumpButtonPressed && _coyoteTimeCounter <= 0f && _availableJump > 0 && canDoubleJump && _wallJumpingCounter <= 0f)
         {
-
+            if (jumpSoundClip != null) SFXManager.instance.PlaySFXClip(jumpSoundClip, transform, 1f);
             GroundDust();
+
             if (flashEffect != null) flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
@@ -296,7 +306,7 @@ public class PlayerMovement : MonoBehaviour
     #region Dash
     private void DashInput()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift)) _dashButtonPressed = true;
+        if (Input.GetButtonDown("Dash")) _dashButtonPressed = true;
     }
     private void Dash()
     {
@@ -313,6 +323,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private IEnumerator ExecuteDash()
     {
+        if (dashSoundClip != null) SFXManager.instance.PlaySFXClip(dashSoundClip, transform, 1f);
         if (_freezeFrame)
         {
             _isFrozen = true;
@@ -372,7 +383,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void WallJump()
     {
-        
+
         if (IsWalled() && !IsGrounded())
         {
             _isWallJumping = false;
@@ -474,6 +485,7 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Die()
     {
+        SFXManager.instance.PlaySFXClip(deathSoundClip, transform, 1f);
         active = false;
         _collider.enabled = false;
         _groundCollider.GetComponent<Collider2D>().enabled = false;
