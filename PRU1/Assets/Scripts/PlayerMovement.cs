@@ -10,13 +10,14 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D _rb;
     private Collider2D _collider;
     [SerializeField] private Collider2D _groundCollider;
-    private bool _isFacingRight = true;
+    [SerializeField] private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _maxFallSpeed = -20f;
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
     public float timeScale = .9f;
     public bool active;
     private Vector2 _respawnPoint;
+    public bool isGrounded;
     public bool isWalled; //consider removing
 
     #endregion
@@ -119,6 +120,8 @@ public class PlayerMovement : MonoBehaviour
     #region Amimator
     private bool isSoundCoroutineRunning = false;
     [SerializeField] private Animator anim;
+    [SerializeField] private PlayerDeformation _jumpDeformation;
+    [SerializeField] private PlayerDeformation _landDeformation;
     #endregion
     #endregion
     private void Awake()
@@ -126,6 +129,7 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
         _collider = GetComponent<Collider2D>();
+        
         active = true;
         SetRespawnPoint(transform.position);
         Time.timeScale = timeScale;
@@ -136,10 +140,11 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
+        isGrounded = IsGrounded();
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-        anim.SetFloat("Speed", Mathf.Abs(_rb.linearVelocityX));
+        if (anim != null) anim.SetFloat("Speed", Mathf.Abs(_rb.linearVelocityX));
 
         JumpInput();
         DashInput();
@@ -206,8 +211,9 @@ public class PlayerMovement : MonoBehaviour
         }
         if (!_wasGrounded && IsGrounded() && active)
         {
-            if (landSoundClips != null) SFXManager.instance.PlayRandomSFXClip(landSoundClips, transform, 1f);
+            PlayRandomSFXClip(landSoundClips);
             GroundDust();
+            if (_landDeformation != null) _landDeformation.PlayDeformation();
             if (!_canDash || _availableJump <= 0)
                 if (flashEffect != null)
                     flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
@@ -224,9 +230,9 @@ public class PlayerMovement : MonoBehaviour
     {
         isSoundCoroutineRunning = true;
         //GroundDust();
-        if (landSoundClips != null) SFXManager.instance.PlayRandomSFXClip(landSoundClips, transform, 0.8f);
+        PlayRandomSFXClip(landSoundClips);
         yield return new WaitForSeconds(1f / 3f);
-        isSoundCoroutineRunning = false;
+        if (_rb.linearVelocityX != 0) isSoundCoroutineRunning = false;
     }
 
     private void JumpInput()
@@ -258,8 +264,9 @@ public class PlayerMovement : MonoBehaviour
         //starts ground jump
         if (_jumpBufferTimeCounter > 0f && _coyoteTimeCounter > 0f)
         {
-            if (jumpSoundClip != null) SFXManager.instance.PlaySFXClip(jumpSoundClip, transform, 1f);
+            PlaySFXClip(jumpSoundClip);
             GroundDust();
+            if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
 
             _jumpBufferTimeCounter = 0f;
@@ -275,9 +282,9 @@ public class PlayerMovement : MonoBehaviour
         //double jump condition
         else if (_jumpButtonPressed && _coyoteTimeCounter <= 0f && _availableJump > 0 && canDoubleJump && _wallJumpingCounter <= 0f)
         {
-            if (jumpSoundClip != null) SFXManager.instance.PlaySFXClip(jumpSoundClip, transform, 1f);
+            PlaySFXClip(jumpSoundClip);
             GroundDust();
-
+            if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             if (flashEffect != null) flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
             _jumpBufferTimeCounter = 0f;
@@ -402,6 +409,8 @@ public class PlayerMovement : MonoBehaviour
             _wallJumpingDirection = -transform.localScale.x;
             } else {
                 _wallJumpingDirection = transform.localScale.x;
+                
+                //_isFacingRight = !_isFacingRight;
             }
             _wallJumpingCounter = _wallJumpingTime;
             //CancelInvoke(nameof(StopWallJumping));
@@ -414,7 +423,8 @@ public class PlayerMovement : MonoBehaviour
         if (_jumpBufferTimeCounter > 0f && _wallJumpingCounter >= 0f)
         {
             _isWallJumping = true;
-            if (_wallJumpSoundClips != null) SFXManager.instance.PlayRandomSFXClip(_wallJumpSoundClips, transform, 1f);
+            PlayRandomSFXClip(_wallJumpSoundClips);
+            if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             _rb.linearVelocity = new Vector2(0f, 0f);
             Vector2 force = Vector2.right * _speed * 1.5f * _wallJumpingDirection + Vector2.up * _jumpSpeed;
             DisableMovement(0.1f);
@@ -537,5 +547,16 @@ public class PlayerMovement : MonoBehaviour
         active = false;
         yield return new WaitForSeconds(seconds);
         active = true;
+    }
+    private void PlayRandomSFXClip(AudioClip[] soundClips) 
+    {
+        if (soundClips == null || SFXManager.instance == null) return;
+        
+        SFXManager.instance.PlayRandomSFXClip(soundClips, transform, 1f);
+    }
+    private void PlaySFXClip(AudioClip soundClip) 
+    {
+        if (soundClip == null || SFXManager.instance == null) return;
+        SFXManager.instance.PlaySFXClip(soundClip, transform, 1f);
     }
 }
