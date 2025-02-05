@@ -129,7 +129,7 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
         _collider = GetComponent<Collider2D>();
-        
+
         active = true;
         SetRespawnPoint(transform.position);
         Time.timeScale = timeScale;
@@ -144,10 +144,17 @@ public class PlayerMovement : MonoBehaviour
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-        if (anim != null) anim.SetFloat("Speed", Mathf.Abs(_rb.linearVelocityX));
+        if (anim != null)
+        {
+            anim.SetFloat("VelX", Mathf.Abs(_rb.linearVelocityX));
+            anim.SetFloat("VelY", _rb.linearVelocityY);
+            anim.SetBool("IsGrounded", IsGrounded());
+            anim.SetBool("IsWallSliding", _isWallSliding);
+        }
 
         JumpInput();
         DashInput();
+
     }
     private void FixedUpdate() //update mỗi số frame (2-3-4 frame) ít độc lập frame hơn => ít responsive hơn
     {
@@ -247,6 +254,7 @@ public class PlayerMovement : MonoBehaviour
             _coyoteTimeCounter = _coyoteTime;
             //reset double jump when player is grounded
             _availableJump = _extraJump;
+            if (anim != null && _rb.linearVelocityY <= 0) anim.SetBool("IsJumping", false);
         }
         else
         {
@@ -266,6 +274,7 @@ public class PlayerMovement : MonoBehaviour
         {
             PlaySFXClip(jumpSoundClip);
             GroundDust();
+            if (anim != null) anim.SetBool("IsJumping", true);
             if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
 
@@ -284,6 +293,11 @@ public class PlayerMovement : MonoBehaviour
         {
             PlaySFXClip(jumpSoundClip);
             GroundDust();
+
+            if (anim != null)
+            {
+                anim.SetBool("IsJumping", true);
+            }
             if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             if (flashEffect != null) flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
@@ -389,10 +403,21 @@ public class PlayerMovement : MonoBehaviour
     #region Wall Tech
     private void WallSlide()
     {
-        if (IsWalled() && !IsGrounded() && xRaw != 0 && _rb.linearVelocityY <= 0)
+        if ((IsWalled() || IsWalledLeft()) && !IsGrounded() && xRaw != 0 && _rb.linearVelocityY <= 0)
         {
             _rb.linearVelocityY *= _wallSlidingSpeedMultiplier;
             _isWallSliding = true;
+            if (IsWalled())
+            {
+                Vector3 localScale = transform.localScale;
+                _isFacingRight = !_isFacingRight;
+                localScale.x *= -1f;
+                transform.localScale = localScale;
+            }
+            else if (IsWalledLeft())
+            {
+
+            }
         }
         else
         {
@@ -405,11 +430,14 @@ public class PlayerMovement : MonoBehaviour
         if ((IsWalled() && !IsGrounded()) || (IsWalledLeft() && !IsGrounded()))
         {
             _isWallJumping = false;
-            if (IsWalled()) {
-            _wallJumpingDirection = -transform.localScale.x;
-            } else {
+            if (IsWalled())
+            {
+                _wallJumpingDirection = -transform.localScale.x;
+            }
+            else
+            {
                 _wallJumpingDirection = transform.localScale.x;
-                
+
                 //_isFacingRight = !_isFacingRight;
             }
             _wallJumpingCounter = _wallJumpingTime;
@@ -439,20 +467,17 @@ public class PlayerMovement : MonoBehaviour
                 localScale.x *= -1f;
                 transform.localScale = localScale;
             }
-            
+
             //Invoke(nameof(StopWallJumping), 0.3f);
 
             _jumpButtonPressed = false;
         }
         if (IsGrounded())
-            {
-                _isWallJumping = false;
-            }
+        {
+            _isWallJumping = false;
+        }
     }
-    private void StopWallJumping()
-    {
-        _isWallJumping = false;
-    }
+
     #endregion
     #region Particles
     private void WallDust()
@@ -471,7 +496,7 @@ public class PlayerMovement : MonoBehaviour
     private void GroundDust()
     {
         if (groundParticle == null) return;
-        
+
         groundParticle.Play();
     }
     private void DashDust(float xRaw, float yRaw)
@@ -548,13 +573,13 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(seconds);
         active = true;
     }
-    private void PlayRandomSFXClip(AudioClip[] soundClips) 
+    private void PlayRandomSFXClip(AudioClip[] soundClips)
     {
         if (soundClips == null || SFXManager.instance == null) return;
-        
+
         SFXManager.instance.PlayRandomSFXClip(soundClips, transform, 1f);
     }
-    private void PlaySFXClip(AudioClip soundClip) 
+    private void PlaySFXClip(AudioClip soundClip)
     {
         if (soundClip == null || SFXManager.instance == null) return;
         SFXManager.instance.PlaySFXClip(soundClip, transform, 1f);
