@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
     [Space]
     [Header("Dash")]
     private bool _canDash;
-    private bool _isDashing;
+    public bool _isDashing;
     [SerializeField] private float _dashingPower = 24f;
     [SerializeField] private float _dashingTime = 0.2f;
     private const float _dashNormalizer = 0.707f;
@@ -86,9 +86,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private ParticleSystem dashParticle;
     public FlashEffect flashEffect;
     private float _dashDustSpeed = 5f;
-    private float xRaw;
-    private float yRaw;
-    private float x;
+    private float xRaw, yRaw, x;
+    public bool _hasDoubleJumped;
     #endregion
     #region Camera
     [Space]
@@ -298,7 +297,7 @@ public class PlayerMovement : MonoBehaviour
         {
             PlaySFXClip(jumpSoundClip);
             GroundDust();
-
+            _hasDoubleJumped = true;
             if (anim != null)
             {
                 anim.SetBool("IsJumping", true);
