@@ -7,13 +7,14 @@ public class PlayerMovement : MonoBehaviour
     #region Variables
     #region Fundementals
     [Header("Fundementals")]
-    private Rigidbody2D _rb;
-    private Collider2D _collider;
+    
     [SerializeField] private Collider2D _groundCollider;
     [SerializeField] private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _maxFallSpeed = -20f;
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
+    private Rigidbody2D _rb;
+    private Collider2D _collider;
     public float timeScale = .9f;
     public bool active;
     private Vector2 _respawnPoint;
@@ -51,10 +52,11 @@ public class PlayerMovement : MonoBehaviour
     #region WallTech
     [Space]
     [Header("Wall Tech")]
-    private bool _isWallSliding;
-    private bool _isWallJumping;
+    
     [SerializeField] private float _wallSlidingSpeedMultiplier;
     [SerializeField] private float _wallJumpingTime = 0.1f;
+    [SerializeField] private bool _isWallSliding;
+    [SerializeField] private bool _isWallJumping;
     private float _wallJumpingCounter;
     private float _wallJumpingDirection;
     [SerializeField] private float _wallJumpingLerp = 10f;
@@ -74,9 +76,10 @@ public class PlayerMovement : MonoBehaviour
     #region Misc
     [Space]
     [Header("Misc")]
-    private float _freezeDuration = 0.05f;
-    private bool _isFrozen;
+   
     [SerializeField] private TrailRenderer tr;
+     private float _freezeDuration = 0.05f;
+    private bool _isFrozen;
     private bool _wasGrounded;
     [SerializeField] private ParticleSystem slideParticle;
     [SerializeField] private ParticleSystem groundParticle;
@@ -118,10 +121,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private AudioClip dashSoundClip;
     #endregion
     #region Amimator
-    private bool isSoundCoroutineRunning = false;
+    [Space]
+    [Header("Animator")]
     [SerializeField] private Animator anim;
     [SerializeField] private PlayerDeformation _jumpDeformation;
     [SerializeField] private PlayerDeformation _landDeformation;
+    private bool isSoundCoroutineRunning = false;
     #endregion
     #endregion
     private void Awake()
@@ -206,7 +211,7 @@ public class PlayerMovement : MonoBehaviour
     {
 
         //if player is walljumping, use a slightly different movement mechanic
-        if (!_isWallJumping || IsGrounded())
+        if (!_isWallJumping)
         {
             _rb.linearVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
         }
@@ -429,6 +434,7 @@ public class PlayerMovement : MonoBehaviour
 
         if ((IsWalled() && !IsGrounded()) || (IsWalledLeft() && !IsGrounded()))
         {
+            if (Mathf.Abs(_rb.linearVelocityX) <= 0.001f)
             _isWallJumping = false;
             if (IsWalled())
             {
