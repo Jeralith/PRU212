@@ -94,8 +94,6 @@ public class PlayerMovement : MonoBehaviour
     [Header("Camera")]
     public ShockwaveManager _shockwaveManager;
     public CameraShake cameraShake;
-    [SerializeField] private float _shakeDuration = 0.15f;
-    [SerializeField] private float _shakeStrength = 0.4f;
     private CinemachineImpulseSource _impulseSource;
     #endregion
     #region Colors
@@ -116,7 +114,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private AudioClip deathSoundClip;
     [SerializeField] private AudioClip jumpSoundClip;
     [SerializeField] private AudioClip[] landSoundClips;
-    [SerializeField] private AudioClip[] _wallJumpSoundClips;
+    [SerializeField] private AudioClip[] runSoundClips;
+    [SerializeField] private AudioClip[] wallJumpSoundClips;
     [SerializeField] private AudioClip dashSoundClip;
     #endregion
     #region Amimator
@@ -183,10 +182,7 @@ public class PlayerMovement : MonoBehaviour
         WallDust();
         _wasGrounded = IsGrounded();
 
-        if (Mathf.Abs(_rb.linearVelocityX) > 0 && IsGrounded() && !isSoundCoroutineRunning)
-        {
-            StartCoroutine(GroundEffect());
-        }
+        
 
     }
     #region Collision Check
@@ -199,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Killable"))
         {
-            flashEffect.CallFlash(0.5f, 0.2f, _deathColor);
+            flashEffect.CallFlash(1f, 0.2f, _deathColor);
 
         }
     }
@@ -236,16 +232,19 @@ public class PlayerMovement : MonoBehaviour
         //     Vector2 force = Vector2.right * (_isFacingRight ? -1 : 1) * _decceleration;
         //     _rb.linearVelocityX += _decceleration;
         // }
-
+        if (Mathf.Abs(_rb.linearVelocityX) > 0.1f && IsGrounded() && !isSoundCoroutineRunning)
+        {
+            StartCoroutine(GroundEffect());
+        }
     }
 
     private IEnumerator GroundEffect()
     {
         isSoundCoroutineRunning = true;
         //GroundDust();
-        PlayRandomSFXClip(landSoundClips);
+        PlayRandomSFXClip(runSoundClips);
         yield return new WaitForSeconds(1f / 3f);
-        if (_rb.linearVelocityX != 0) isSoundCoroutineRunning = false;
+        isSoundCoroutineRunning = false;
     }
 
     private void JumpInput()
@@ -458,11 +457,11 @@ public class PlayerMovement : MonoBehaviour
         if (_jumpBufferTimeCounter > 0f && _wallJumpingCounter >= 0f)
         {
             _isWallJumping = true;
-            PlayRandomSFXClip(_wallJumpSoundClips);
+            PlayRandomSFXClip(wallJumpSoundClips);
             if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             _rb.linearVelocity = new Vector2(0f, 0f);
             Vector2 force = Vector2.right * _speed * 1.5f * _wallJumpingDirection + Vector2.up * _jumpSpeed;
-            DisableMovement(0.1f);
+            //DisableMovement(0.1f);
             _rb.linearVelocity += force;
 
             _wallJumpingCounter = 0f;

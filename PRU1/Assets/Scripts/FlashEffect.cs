@@ -1,18 +1,26 @@
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 public class FlashEffect : MonoBehaviour
 {
     private float _duration = 0.2f;
     private int _flashEffectAmount = Shader.PropertyToID("_FlashAmount");
     private int _color = Shader.PropertyToID("_FlashColor");
-
+    [SerializeField] private RendererType rendererType = RendererType.Sprite;
     private Material _material;
     private float _lerpAmount;
     [ColorUsage(true, true)]
-    public Color myColor;
+    private Color myColor;
+    public enum RendererType {
+        Sprite = 0,
+        Tilemap = 1
+    }
     private void Awake()
     {
+        if (rendererType == RendererType.Sprite) 
         _material = GetComponent<SpriteRenderer>().material;
+        else 
+        _material = GetComponent<TilemapRenderer>().material;
     }
     public void CallFlash(float intensity, float duration, Color color)
     {

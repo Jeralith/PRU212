@@ -1,5 +1,8 @@
+using System.Collections;
 using System.Runtime.CompilerServices;
+using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Instructions : MonoBehaviour
 {
@@ -7,10 +10,9 @@ public class Instructions : MonoBehaviour
     private PlayerMovement playerMovement;
     public FlashEffect flashEffect;
     [SerializeField, Range(0f, 1f)] private float greyValue;
-    [Header("UI Button Images")]
-
-    [SerializeField] private GameObject upBtn;
-    [SerializeField] private GameObject downBtn;
+    #region GameObjects
+    [Header("Game Objects")]
+    [SerializeField] private GameObject block;
     [SerializeField] private GameObject leftBtn;
     [SerializeField] private GameObject rightBtn;
     [SerializeField] private GameObject shiftBtn;
@@ -20,8 +22,10 @@ public class Instructions : MonoBehaviour
     [SerializeField] private GameObject spaceBtn2;
     [SerializeField] private GameObject trial1;
     [SerializeField] private GameObject trial2;
-
-
+    [SerializeField] private GameObject _backgroundMusic;
+    
+    #endregion
+    #region Sprite Renderers
     private SpriteRenderer upButtonRenderer;
     private SpriteRenderer downButtonRenderer;
     private SpriteRenderer leftButtonRenderer;
@@ -33,14 +37,27 @@ public class Instructions : MonoBehaviour
     private SpriteRenderer rightDashButtonRenderer;
     private SpriteRenderer trialRenderer1;
     private SpriteRenderer trialRenderer2;
+    #endregion
     [ColorUsage(true, true)]
-    [SerializeField] private Color flashColor;
+    [SerializeField] private Color buttonFlashColor;
+    [ColorUsage(true, true)]
+    [SerializeField] private Color blockFlashColor;
 
-    private bool upPressed, downPressed, leftPressed, rightPressed, jumpPressed, doubleJumpPressed, dashPressed;
+    [SerializeField] private AudioClip buttonClick;
+    [SerializeField] private AudioClip unlocked;
+    [SerializeField] private AudioClip blockBreak;
+    private bool hasPlayedUnlockedAudio = false;
+    private AudioLowPassFilter _lowPass;
+    private bool _isFrozen;
+    public float length;
+    public CameraShake cameraShake;
+    private CinemachineImpulseSource _impulseSource;
+    [SerializeField] private float _freezeDuration;
+    private bool leftPressed = false, rightPressed = false, jumpPressed = false, doubleJumpPressed = false, dashPressed = false;
+
+    
     void Start()
     {
-        SetupButton(upBtn, greyValue);
-        SetupButton(downBtn, greyValue);
         SetupButton(leftBtn, greyValue);
         SetupButton(rightBtn, greyValue);
         SetupButton(shiftBtn, greyValue);
@@ -50,43 +67,27 @@ public class Instructions : MonoBehaviour
         SetupButton(spaceBtn2, greyValue);
         SetupButton(trial1, greyValue);
         SetupButton(trial2, greyValue);
-
-        upPressed = false;
-        downPressed = false;
-        jumpPressed = false;
-        doubleJumpPressed = false;
-        dashPressed = false;
-
+        length = blockBreak.length;
+        block.SetActive(true);
         playerMovement = player.GetComponent<PlayerMovement>();
+        _impulseSource = GetComponent<CinemachineImpulseSource>();
+        _lowPass = _backgroundMusic.GetComponent<AudioLowPassFilter>();
+        _freezeDuration = unlocked.length;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if ((Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) && !upPressed)
-        {
-            ActivateButton(upBtn);
-            upPressed = true;
-        }
-
-        if ((Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) && !downPressed)
-        {
-           ActivateButton(downBtn);
-            downPressed = true;
-        }
-
         if ((Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) && !leftPressed)
         {
             ActivateButton(leftBtn);
             leftPressed = true;
         }
-
         if ((Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) && !rightPressed)
         {
             ActivateButton(rightBtn);
             rightPressed = true;
         }
-
         if (Input.GetKeyDown(KeyCode.Space) && !jumpPressed)
         {
             ActivateButton(spaceBtn1);
@@ -108,18 +109,56 @@ public class Instructions : MonoBehaviour
             ActivateButton(shiftBtn);
             dashPressed = true;
         }
+        if (leftPressed && rightPressed && jumpPressed && doubleJumpPressed && dashPressed && !hasPlayedUnlockedAudio)
+        {
+            PlaySFXClip(unlocked);
+            hasPlayedUnlockedAudio = true;
+            StartCoroutine(ExecuteFreeze(0.2f, unlocked.length));
+            StartCoroutine(DestroyBlock());
+
+        }
     }
 
-    private void ActivateButton(GameObject gameObject) {
-        if(gameObject.GetComponent<SpriteRenderer>() != null) {
+    private void ActivateButton(GameObject gameObject)
+    {
+        if (gameObject.GetComponent<SpriteRenderer>() != null)
+        {
             flashEffect = gameObject.GetComponent<FlashEffect>();
-            flashEffect.CallFlash(1f, 0.2f, flashColor);
+            flashEffect.CallFlash(1f, 0.2f, buttonFlashColor);
             gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+            PlaySFXClip(buttonClick);
         }
     }
     private void SetupButton(GameObject gameObject, float greyValue)
     {
         SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
         spriteRenderer.color = new Color(greyValue, greyValue, greyValue);
+    }
+    private void PlaySFXClip(AudioClip soundClip)
+    {
+        if (soundClip == null || SFXManager.instance == null) return;
+        SFXManager.instance.PlaySFXClip(soundClip, transform, 1f);
+    }
+    private IEnumerator ExecuteFreeze(float timeScale, float duration)
+    {
+        _isFrozen = true;
+        _lowPass.cutoffFrequency = 300f;
+        var original = playerMovement.timeScale;
+        Time.timeScale = timeScale;
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = original;
+        _lowPass.cutoffFrequency = 22000f;
+        _isFrozen = false;
+    }
+    private IEnumerator DestroyBlock()
+    {
+        yield return new WaitForSecondsRealtime(unlocked.length);
+        PlaySFXClip(blockBreak);
+        flashEffect = block.GetComponentInChildren<FlashEffect>();
+        flashEffect.CallFlash(1f, 0.2f, blockFlashColor);
+        if (cameraShake != null) CameraShake.instance.Shake(_impulseSource);
+        block.GetComponentInChildren<TilemapRenderer>().material.color = Color.clear;
+        yield return new WaitForSecondsRealtime(0.2f);
+        block.SetActive(false);
     }
 }
