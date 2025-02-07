@@ -228,6 +228,8 @@ public class PlayerMovement : MonoBehaviour
             if (!_canDash || _availableJump <= 0)
                 if (flashEffect != null)
                     flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
+
+            
         }
         // if (xRaw == 0 && _rb.linearVelocityX != 0 && IsGrounded())
         // {

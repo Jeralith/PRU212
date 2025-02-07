@@ -10,16 +10,9 @@ public class FlashEffect : MonoBehaviour
     private float _lerpAmount;
     [ColorUsage(true, true)]
     public Color myColor;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Awake()
     {
         _material = GetComponent<SpriteRenderer>().material;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
     public void CallFlash(float intensity, float duration, Color color)
     {
