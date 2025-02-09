@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public class PlayerDeformation : MonoBehaviour
+public class Deformation : MonoBehaviour
 {
     [Header("Core")]
     [SerializeField] Transform transformToAffect;

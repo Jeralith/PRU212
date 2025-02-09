@@ -121,9 +121,9 @@ public class PlayerMovement : MonoBehaviour
     #region Amimator
     [Space]
     [Header("Animator")]
-    [SerializeField] private Animator anim;
-    [SerializeField] private PlayerDeformation _jumpDeformation;
-    [SerializeField] private PlayerDeformation _landDeformation;
+    private PlayerAnimation _playerAnim;
+    [SerializeField] private Deformation _jumpDeformation;
+    [SerializeField] private Deformation _landDeformation;
     private bool isSoundCoroutineRunning = false;
     #endregion
     #endregion
@@ -132,7 +132,7 @@ public class PlayerMovement : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
         _collider = GetComponent<Collider2D>();
-
+        _playerAnim = GetComponent<PlayerAnimation>();
         active = true;
         SetRespawnPoint(transform.position);
         Time.timeScale = timeScale;
@@ -147,12 +147,10 @@ public class PlayerMovement : MonoBehaviour
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-        if (anim != null)
-        {
-            anim.SetFloat("VelX", Mathf.Abs(_rb.linearVelocityX));
-            anim.SetFloat("VelY", _rb.linearVelocityY);
-            anim.SetBool("IsGrounded", IsGrounded());
-            anim.SetBool("IsWallSliding", _isWallSliding);
+        
+        if (_playerAnim != null) {
+            bool isJumping = !IsGrounded() && _rb.linearVelocityY > 0; 
+            _playerAnim.UpdateAnimation(_rb.linearVelocityX, _rb.linearVelocityY, IsGrounded(), _isWallSliding, isJumping);
         }
 
         JumpInput();
@@ -259,7 +257,6 @@ public class PlayerMovement : MonoBehaviour
             _coyoteTimeCounter = _coyoteTime;
             //reset double jump when player is grounded
             _availableJump = _extraJump;
-            if (anim != null && _rb.linearVelocityY <= 0) anim.SetBool("IsJumping", false);
         }
         else
         {
@@ -279,7 +276,6 @@ public class PlayerMovement : MonoBehaviour
         {
             PlaySFXClip(jumpSoundClip);
             GroundDust();
-            if (anim != null) anim.SetBool("IsJumping", true);
             if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
 
@@ -299,10 +295,6 @@ public class PlayerMovement : MonoBehaviour
             PlaySFXClip(jumpSoundClip);
             GroundDust();
             _hasDoubleJumped = true;
-            if (anim != null)
-            {
-                anim.SetBool("IsJumping", true);
-            }
             if (_jumpDeformation != null) _jumpDeformation.PlayDeformation();
             if (flashEffect != null) flashEffect.CallFlash(1f, 0.1f, _doubleJumpColor);
             _rb.linearVelocity = new Vector2(_rb.linearVelocityX, _jumpSpeed);
