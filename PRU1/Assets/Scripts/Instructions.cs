@@ -8,8 +8,7 @@ public class Instructions : MonoBehaviour
 {
     public GameObject player;
     private PlayerMovement playerMovement;
-    public FlashEffect flashEffect;
-    [SerializeField, Range(0f, 1f)] private float greyValue;
+    private FlashEffect _flashEffect;
     #region GameObjects
     [Header("Game Objects")]
     [SerializeField] private GameObject block;
@@ -22,7 +21,7 @@ public class Instructions : MonoBehaviour
     [SerializeField] private GameObject spaceBtn2;
     [SerializeField] private GameObject trial1;
     [SerializeField] private GameObject trial2;
-    [SerializeField] private GameObject _backgroundMusic;
+    
     
     #endregion
     #region Sprite Renderers
@@ -42,18 +41,26 @@ public class Instructions : MonoBehaviour
     [SerializeField] private Color buttonFlashColor;
     [ColorUsage(true, true)]
     [SerializeField] private Color blockFlashColor;
-
+    #region Audio
+    [Space]
+    [Header("Audio")]
     [SerializeField] private AudioClip buttonClick;
     [SerializeField] private AudioClip unlocked;
     [SerializeField] private AudioClip blockBreak;
+    [SerializeField] private GameObject _backgroundMusic;
     private bool hasPlayedUnlockedAudio = false;
     private AudioLowPassFilter _lowPass;
-    private bool _isFrozen;
-    public float length;
+
+    #endregion
+    #region Misc
+    [Space]
+    [Header("Misc")]
     public CameraShake cameraShake;
+    [SerializeField, Range(0f, 1f)] private float greyValue;
     private CinemachineImpulseSource _impulseSource;
-    [SerializeField] private float _freezeDuration;
+    private float _freezeDuration;
     private bool leftPressed = false, rightPressed = false, jumpPressed = false, doubleJumpPressed = false, dashPressed = false;
+    #endregion
 
     
     void Start()
@@ -67,8 +74,6 @@ public class Instructions : MonoBehaviour
         SetupButton(spaceBtn2, greyValue);
         SetupButton(trial1, greyValue);
         SetupButton(trial2, greyValue);
-        length = blockBreak.length;
-        block.SetActive(true);
         playerMovement = player.GetComponent<PlayerMovement>();
         _impulseSource = GetComponent<CinemachineImpulseSource>();
         _lowPass = _backgroundMusic.GetComponent<AudioLowPassFilter>();
@@ -123,8 +128,8 @@ public class Instructions : MonoBehaviour
     {
         if (gameObject.GetComponent<SpriteRenderer>() != null)
         {
-            flashEffect = gameObject.GetComponent<FlashEffect>();
-            flashEffect.CallFlash(1f, 0.2f, buttonFlashColor);
+            _flashEffect = gameObject.GetComponent<FlashEffect>();
+            _flashEffect.CallFlash(1f, 0.2f, buttonFlashColor);
             gameObject.GetComponent<SpriteRenderer>().color = Color.white;
             PlaySFXClip(buttonClick);
         }
@@ -141,21 +146,19 @@ public class Instructions : MonoBehaviour
     }
     private IEnumerator ExecuteFreeze(float timeScale, float duration)
     {
-        _isFrozen = true;
         _lowPass.cutoffFrequency = 300f;
         var original = playerMovement.timeScale;
         Time.timeScale = timeScale;
         yield return new WaitForSecondsRealtime(duration);
         Time.timeScale = original;
         _lowPass.cutoffFrequency = 22000f;
-        _isFrozen = false;
     }
     private IEnumerator DestroyBlock()
     {
         yield return new WaitForSecondsRealtime(unlocked.length);
         PlaySFXClip(blockBreak);
-        flashEffect = block.GetComponentInChildren<FlashEffect>();
-        flashEffect.CallFlash(1f, 0.2f, blockFlashColor);
+        _flashEffect = block.GetComponentInChildren<FlashEffect>();
+        _flashEffect.CallFlash(1f, 0.2f, blockFlashColor);
         if (cameraShake != null) CameraShake.instance.Shake(_impulseSource);
         block.GetComponentInChildren<TilemapRenderer>().material.color = Color.clear;
         yield return new WaitForSecondsRealtime(0.2f);
