@@ -962,12 +962,26 @@ MonoBehaviour:
   _dashColor: {r: 0, g: 0, b: 0, a: 0}
   _doubleJumpColor: {r: 0, g: 0, b: 0, a: 0}
   _deathColor: {r: 0, g: 0, b: 0, a: 0}
-  deathSoundClip: {fileID: 0}
-  jumpSoundClip: {fileID: 0}
-  landSoundClips: []
-  runSoundClips: []
-  wallJumpSoundClips: []
-  dashSoundClip: {fileID: 0}
+  deathSoundClip: {fileID: 8300000, guid: 52dfa9b197def7143a68211af9d6564b, type: 3}
+  jumpSoundClip: {fileID: 8300000, guid: 3e414ef33bab1464c9ef7172a4b5e054, type: 3}
+  landSoundClips:
+  - {fileID: 8300000, guid: b00d916912e6aff42b4d7158ebe89dd4, type: 3}
+  - {fileID: 8300000, guid: a0005fd08a7136e4b8ed641e5bc98017, type: 3}
+  - {fileID: 8300000, guid: 79d1ad79d5020824db4e511dd1c45384, type: 3}
+  - {fileID: 8300000, guid: b8033d1ec48141e41b0581e47d9d7d2c, type: 3}
+  - {fileID: 8300000, guid: 1c2cbf011797f404c8bfb242bd73125d, type: 3}
+  runSoundClips:
+  - {fileID: 8300000, guid: a0c8fbcd55a42e445b26d939d3315ef0, type: 3}
+  - {fileID: 8300000, guid: 7b0e7d6532bc38443bd61e7c0a4414f5, type: 3}
+  - {fileID: 8300000, guid: 41222e1df051e9f47951b016b471ea53, type: 3}
+  - {fileID: 8300000, guid: 0b4319c52da749d4d965272d821eaedc, type: 3}
+  - {fileID: 8300000, guid: 9246dc03a824be84cbedf0a5b55d5c72, type: 3}
+  - {fileID: 8300000, guid: 0708b5f49d9ac044882903edbfa998c0, type: 3}
+  - {fileID: 8300000, guid: 705b9cc9c057e7f468236f47c97e107b, type: 3}
+  wallJumpSoundClips:
+  - {fileID: 8300000, guid: 8a36acf1618d08d4192087e45b5126d8, type: 3}
+  - {fileID: 8300000, guid: cdb2c426ac443c944b5e87fbec83d9e4, type: 3}
+  dashSoundClip: {fileID: 8300000, guid: 26d87d84adba3dc49a3a9cf8ab5227b7, type: 3}
   _jumpDeformation: {fileID: 0}
   _landDeformation: {fileID: 0}
 --- !u!50 &1350205706

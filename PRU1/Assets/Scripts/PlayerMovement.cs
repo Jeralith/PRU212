@@ -194,7 +194,7 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.CompareTag("Killable"))
         {
             flashEffect.CallFlash(1f, 0.2f, _deathColor);
-
+            Die();
         }
     }
 
@@ -353,7 +353,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private IEnumerator ExecuteDash()
     {
-        if (dashSoundClip != null) SFXManager.instance.PlaySFXClip(dashSoundClip, transform, 1f);
+        PlaySFXClip(dashSoundClip);
         if (_freezeFrame)
         {
             _isFrozen = true;
