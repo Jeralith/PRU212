@@ -372,7 +372,17 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      runsheet_0: -3348592161697306942
+      runsheet_1: -2824095829812140232
+      runsheet_2: 5271089256776270735
+      runsheet_3: 6424632487868291232
+      runsheet_4: 985670175987021279
+      runsheet_5: 8742327929815343627
+      runsheet_6: -6912084431192353017
+      runsheet_7: -5535122256618769859
+      runsheet_8: -5918976917249496186
+      runsheet_9: 5430151996941237292
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
