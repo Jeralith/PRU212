@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -7,12 +8,15 @@ public class PlayerMovement : MonoBehaviour
     #region Variables
     #region Fundementals
     [Header("Fundementals")]
-    
+
     [SerializeField] private Collider2D _groundCollider;
     [SerializeField] private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _maxFallSpeed = -20f;
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
+    [SerializeField, Range(0.5f, 2f)] private float _acceleration;
+    [SerializeField, Range(0.5f, 2f)] private float _deceleration;
+    [SerializeField, Range(0f, 1f)] private float _frictionAmount;
     private Rigidbody2D _rb;
     private Collider2D _collider;
     public float timeScale = .9f;
@@ -52,7 +56,7 @@ public class PlayerMovement : MonoBehaviour
     #region WallTech
     [Space]
     [Header("Wall Tech")]
-    
+
     [SerializeField] private float _wallSlidingSpeedMultiplier;
     [SerializeField] private float _wallJumpingTime = 0.1f;
     [SerializeField] private bool _isWallSliding;
@@ -76,9 +80,9 @@ public class PlayerMovement : MonoBehaviour
     #region Misc
     [Space]
     [Header("Misc")]
-   
+
     [SerializeField] private TrailRenderer tr;
-     private float _freezeDuration = 0.05f;
+    private float _freezeDuration = 0.05f;
     private bool _isFrozen;
     private bool _wasGrounded;
     [SerializeField] private ParticleSystem slideParticle;
@@ -147,9 +151,10 @@ public class PlayerMovement : MonoBehaviour
         xRaw = Input.GetAxisRaw("Horizontal"); // -1 0 1
         yRaw = Input.GetAxisRaw("Vertical");   // -1 0 1
         x = Input.GetAxis("Horizontal");       //controller, joystick, analog control => slide từ -1 => 1 e.g: -0.323
-        
-        if (_playerAnim != null) {
-            bool isJumping = !IsGrounded() && _rb.linearVelocityY > 0; 
+
+        if (_playerAnim != null)
+        {
+            bool isJumping = !IsGrounded() && _rb.linearVelocityY > 0;
             _playerAnim.UpdateAnimation(_rb.linearVelocityX, _rb.linearVelocityY, IsGrounded(), _isWallSliding, isJumping);
         }
 
@@ -180,7 +185,7 @@ public class PlayerMovement : MonoBehaviour
         WallDust();
         _wasGrounded = IsGrounded();
 
-        
+
 
     }
     #region Collision Check
@@ -202,18 +207,39 @@ public class PlayerMovement : MonoBehaviour
     #region Basic Movement
     private void HorizontalMovement()
     {
+        float targetSpeed = xRaw * _speed;
+    float speedDif = targetSpeed - _rb.linearVelocityX;
+    float accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? (IsGrounded() ? _acceleration : _acceleration * 0.5f) : _deceleration;
+    float movement = (float)(Math.Pow(Mathf.Abs(speedDif) * accelRate, 2f) * Mathf.Sign(speedDif));
+    float frictionAmount = _frictionAmount;
 
-        //if player is walljumping, use a slightly different movement mechanic
-        if (!_isWallJumping)
-        {
-            _rb.linearVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
-        }
-        else if (!IsGrounded())
-        {
-            var wallJumpingVelocity = _rb.linearVelocity;
-            var playerVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
-            _rb.linearVelocity = Vector2.Lerp(wallJumpingVelocity, playerVelocity, _wallJumpingLerp * Time.fixedDeltaTime);
-        }
+    bool isWallJumpingAndAirborne = _isWallJumping && !IsGrounded();
+
+    if (!_isWallJumping && !IsGrounded())
+    {
+        frictionAmount = _frictionAmount * 0f;
+        _rb.AddForce(movement * Vector2.right);
+    }
+    else if (isWallJumpingAndAirborne)
+    {
+        frictionAmount = _frictionAmount * 0f;
+        Vector2 targetVelocity = new Vector2(x * _speed, _rb.linearVelocityY);
+        _rb.linearVelocity = Vector2.Lerp(_rb.linearVelocity, targetVelocity, _wallJumpingLerp * Time.fixedDeltaTime);
+    }
+
+    if (xRaw == 0)
+    {
+        float deccelAmount = Mathf.Min(Mathf.Abs(_rb.linearVelocityX), Mathf.Abs(frictionAmount));
+        deccelAmount *= Mathf.Sign(_rb.linearVelocityX);
+        _rb.AddForce(Vector2.right * -deccelAmount, ForceMode2D.Impulse);
+    }
+
+    // Apply movement force only if not wall jumping
+    if (!isWallJumpingAndAirborne)
+    {
+        _rb.AddForce(movement * Vector2.right);
+    }
+        //land animation, sfx, effects and more
         if (!_wasGrounded && IsGrounded() && active)
         {
             PlayRandomSFXClip(landSoundClips);
@@ -223,13 +249,8 @@ public class PlayerMovement : MonoBehaviour
                 if (flashEffect != null)
                     flashEffect.CallFlash(0.5f, 0.1f, _refillColor);
 
-            
+
         }
-        // if (xRaw == 0 && _rb.linearVelocityX != 0 && IsGrounded())
-        // {
-        //     Vector2 force = Vector2.right * (_isFacingRight ? -1 : 1) * _decceleration;
-        //     _rb.linearVelocityX += _decceleration;
-        // }
         if (Mathf.Abs(_rb.linearVelocityX) > 0.1f && IsGrounded() && !isSoundCoroutineRunning)
         {
             StartCoroutine(GroundEffect());
@@ -376,7 +397,7 @@ public class PlayerMovement : MonoBehaviour
         _dashDirection = new Vector2(xRaw, yRaw).normalized * _dashingPower;
         if (_dashDirection == Vector2.zero)
         {
-            _dashDirection = new Vector2(transform.localScale.x * _dashingPower, 0);
+            _dashDirection = new Vector2(transform.localScale.x, 0).normalized * _dashingPower;
         }
         _rb.linearVelocity = _dashDirection;
 
@@ -427,7 +448,7 @@ public class PlayerMovement : MonoBehaviour
         if ((IsWalled() && !IsGrounded()) || (IsWalledLeft() && !IsGrounded()))
         {
             if (Mathf.Abs(_rb.linearVelocityX) <= 0.001f)
-            _isWallJumping = false;
+                _isWallJumping = false;
             if (IsWalled())
             {
                 _wallJumpingDirection = -transform.localScale.x;
