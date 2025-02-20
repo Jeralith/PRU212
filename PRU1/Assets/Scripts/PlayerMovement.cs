@@ -535,10 +535,10 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Die()
     {
-        SFXManager.instance.PlaySFXClip(deathSoundClip, transform, 1f);
+        PlaySFXClip(deathSoundClip);
         active = false;
         _collider.enabled = false;
-        _groundCollider.GetComponent<Collider2D>().enabled = false;
+        if (_groundCollider != null) _groundCollider.GetComponent<Collider2D>().enabled = false;
         MiniJump();
         StartCoroutine(Respawn());
     }
@@ -548,7 +548,7 @@ public class PlayerMovement : MonoBehaviour
         transform.position = _respawnPoint;
         active = true;
         _collider.enabled = true;
-        _groundCollider.GetComponent<Collider2D>().enabled = true;
+        if (_groundCollider != null) _groundCollider.GetComponent<Collider2D>().enabled = true;
     }
     public void SetRespawnPoint(Vector2 position)
     {
