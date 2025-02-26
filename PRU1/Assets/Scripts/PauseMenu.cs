@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,6 +12,7 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private GameObject _backgroundMusic;
     private AudioLowPassFilter _lowPass;
     public bool isPaused;
+    [SerializeField] private SpeedrunTimer timer;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -39,7 +41,7 @@ public class PauseMenu : MonoBehaviour
         pauseMenu.SetActive(true);
         exitConfirm.SetActive(false);
         optionsMenu.SetActive(false);
-
+        timer.StopTimer();
         _lowPass.cutoffFrequency = 300f;
         Time.timeScale = 0f;
         isPaused = true;
@@ -55,6 +57,7 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = _player.timeScale;
         isPaused = false;
         _player.active = true;
+        timer.ResumeTimer();
     }
     public void OpenOptions()
     {

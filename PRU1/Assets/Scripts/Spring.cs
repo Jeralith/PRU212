@@ -5,19 +5,24 @@ public class Spring : MonoBehaviour
 {
     //public GameObject _player;
     [SerializeField] private float bounce = 30f;
+    [SerializeField] private AudioClip springClip;
+
     private Animator _anim;
     void Start()
     {
         _anim = GetComponent<Animator>();
     }
-    
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            //other.gameObject.GetComponent<Rigidbody2D>().AddForce(Vector2.up * bounce, ForceMode2D.Impulse);
+            if (SFXManager.instance != null && springClip != null) {
+                SFXManager.instance.PlaySFXClip(springClip, transform, 1f);
+            }
             other.gameObject.GetComponent<Rigidbody2D>().linearVelocityY = bounce;
-            StartCoroutine(SpringAnimation());
+            if (_anim != null)
+                StartCoroutine(SpringAnimation());
         }
     }
     private IEnumerator SpringAnimation()
