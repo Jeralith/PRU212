@@ -7,6 +7,9 @@ TagManager:
   - Ground
   - Transition
   - Killable
+  - Ladder
+  - Platform
+  - Ice
   layers:
   - Default
   - TransparentFX
@@ -20,7 +23,7 @@ TagManager:
   - Transition
   - Killable
   - Spring
-  - 
+  - Ice
   - 
   - 
   - 
