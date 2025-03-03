@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class RoomManager : MonoBehaviour
@@ -21,6 +22,7 @@ public class RoomManager : MonoBehaviour
         if (other.CompareTag("Player") && !other.isTrigger)
         {
             virtualCam.SetActive(false);
+            
         }
     }
 }
