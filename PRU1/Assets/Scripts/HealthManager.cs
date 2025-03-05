@@ -34,7 +34,7 @@ public class HealthManager : MonoBehaviour
         {
             float distance = Vector2.Distance(player.position, torch.transform.position);
 
-            if (distance <= 3f)
+            if (distance <= 1f)
             {
                 resetWarm();
                 //CancelInvoke("TakeDamage");
