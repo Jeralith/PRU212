@@ -136,6 +136,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Deformation _landDeformation;
     private bool isSoundCoroutineRunning = false;
     #endregion
+
+    public HealthManager _healthManager;
+
     #endregion
     private void Awake()
     {
@@ -146,6 +149,7 @@ public class PlayerMovement : MonoBehaviour
         active = true;
         SetRespawnPoint(transform.position);
         Time.timeScale = timeScale;
+        //_healthManager.OnPlayerDie += Die;
     }
     private void Update() //update sẽ chạy mỗi frame
     {

@@ -10,6 +10,7 @@ TagManager:
   - Ladder
   - Platform
   - Ice
+  - Torch
   layers:
   - Default
   - TransparentFX
