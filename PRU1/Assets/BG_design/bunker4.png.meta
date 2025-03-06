@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      bunker4_0: -3961795585357497842
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
