@@ -58,6 +58,8 @@ public class PlayerMovement : MonoBehaviour
     private int _availableJump;
     private bool _jumpButtonPressed;
     #endregion
+    #region Misc
+    [Space]
     #region Wall Tech
     [Space]
     [Header("Wall Tech")]
@@ -83,8 +85,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform _cornerCheckLeft;
     [SerializeField] private Transform _cornerCheckRight;
     #endregion
-    #region Misc
-    [Space]
     [Header("Misc")]
 
     [SerializeField] private TrailRenderer tr;
@@ -367,8 +367,13 @@ public class PlayerMovement : MonoBehaviour
     #region Dash
     private void DashInput()
     {
-        if (Input.GetButtonDown("Dash")) _dashButtonPressed = true;
+        //if (Input.GetButtonDown("Dash")) _dashButtonPressed = true;
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            _dashButtonPressed = true;
+        }
     }
+
     private void Dash()
     {
         //dash is refilled when player touches ground
