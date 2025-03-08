@@ -8,21 +8,27 @@ public class PlayerMovement : MonoBehaviour
     #region Variables
     #region Fundementals
     [Header("Fundementals")]
-
+     
     [SerializeField] private Collider2D _groundCollider;
     [SerializeField] private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _maxFallSpeed = -20f;
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
-    [SerializeField, Range(0.5f, 2f)] private float _acceleration;
-    [SerializeField, Range(0.5f, 2f)] private float _deceleration;
-    [SerializeField, Range(0f, 1f)] private float _frictionAmount;
+    
+    [SerializeField, Range(0.5f, 2f)] private float _accelerationValue = 1.2f;
+    [SerializeField, Range(0.5f, 2f)] private float _decelerationValue = 1.2f;
+    [SerializeField, Range(0f, 1f)] private float _frictionAmountValue = 0.5f;
+    private float _acceleration;
+    private float _deceleration;
+    private float _frictionAmount;
     private Rigidbody2D _rb;
     private Collider2D _collider;
     public float timeScale = .9f;
     public bool active;
     private Vector2 _respawnPoint;
     public bool isWalled; //consider removing
+    [SerializeField, Range(0f, 2f)] private float _iceDeceleration = 0.4f;
+    [SerializeField, Range(0f, 1f)] private float _iceFriction = 0.4f;
 
     #endregion
     #region Dash
@@ -52,6 +58,8 @@ public class PlayerMovement : MonoBehaviour
     private int _availableJump;
     private bool _jumpButtonPressed;
     #endregion
+    #region Misc
+    [Space]
     #region Wall Tech
     [Space]
     [Header("Wall Tech")]
@@ -69,6 +77,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Collisions")]
     [SerializeField] private Transform _groundCheck;
     [SerializeField] private LayerMask _groundLayer;
+    [SerializeField] private LayerMask _iceLayer;
     [SerializeField] private Transform _wallCheckRight;
     [SerializeField] private Transform _wallCheckLeft;
     [SerializeField] private LayerMask _wallLayer;
@@ -76,8 +85,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform _cornerCheckLeft;
     [SerializeField] private Transform _cornerCheckRight;
     #endregion
-    #region Misc
-    [Space]
     [Header("Misc")]
 
     [SerializeField] private TrailRenderer tr;
@@ -129,6 +136,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Deformation _landDeformation;
     private bool isSoundCoroutineRunning = false;
     #endregion
+
+    public HealthManager _healthManager;
+
     #endregion
     private void Awake()
     {
@@ -139,6 +149,7 @@ public class PlayerMovement : MonoBehaviour
         active = true;
         SetRespawnPoint(transform.position);
         Time.timeScale = timeScale;
+        //_healthManager.OnPlayerDie += Die;
     }
     private void Update() //update sẽ chạy mỗi frame
     {
@@ -174,7 +185,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (!_isWallJumping)
             Flip();
-
+        SlipperyFloor();
 
         WallSlide();
 
@@ -188,7 +199,7 @@ public class PlayerMovement : MonoBehaviour
     }
     #region Collision Check
     private bool IsGrounded() => Physics2D.OverlapCircle(_groundCheck.position, 0.15f, _groundLayer);
-
+    private bool IsOnIce() => Physics2D.OverlapCircle(_groundCheck.position, 0.15f, _iceLayer);
     private bool IsWalled() => Physics2D.OverlapCircle(_wallCheckRight.position, 0.1f, _wallLayer);
     private bool IsWalledLeft() => Physics2D.OverlapCircle(_wallCheckLeft.position, 0.1f, _wallLayer);
 
@@ -356,8 +367,13 @@ public class PlayerMovement : MonoBehaviour
     #region Dash
     private void DashInput()
     {
-        if (Input.GetButtonDown("Dash")) _dashButtonPressed = true;
+        //if (Input.GetButtonDown("Dash")) _dashButtonPressed = true;
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            _dashButtonPressed = true;
+        }
     }
+
     private void Dash()
     {
         //dash is refilled when player touches ground
@@ -555,10 +571,10 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Die()
     {
-        SFXManager.instance.PlaySFXClip(deathSoundClip, transform, 1f);
+        PlaySFXClip(deathSoundClip);
         active = false;
         _collider.enabled = false;
-        _groundCollider.GetComponent<Collider2D>().enabled = false;
+        if (_groundCollider != null) _groundCollider.GetComponent<Collider2D>().enabled = false;
         MiniJump();
         StartCoroutine(Respawn());
     }
@@ -568,7 +584,7 @@ public class PlayerMovement : MonoBehaviour
         transform.position = _respawnPoint;
         active = true;
         _collider.enabled = true;
-        _groundCollider.GetComponent<Collider2D>().enabled = true;
+        if (_groundCollider != null) _groundCollider.GetComponent<Collider2D>().enabled = true;
     }
     public void SetRespawnPoint(Vector2 position)
     {
@@ -601,5 +617,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (soundClip == null || SFXManager.instance == null) return;
         SFXManager.instance.PlaySFXClip(soundClip, transform, 1f);
+    }
+
+    private void SlipperyFloor()
+    {
+        _acceleration = _accelerationValue;
+        _deceleration = IsOnIce() ? _iceDeceleration : _decelerationValue;
+        _frictionAmount = IsOnIce() ? _iceFriction : _frictionAmountValue;
     }
 }
