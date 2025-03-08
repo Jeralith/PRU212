@@ -28,6 +28,7 @@ public class HealthManager : MonoBehaviour
         if(healthAmount >= 100)
         {
             playerMovement.Die();
+            healthAmount = 0;
         }
         //bool nearTorch = true;
         foreach (GameObject torch in torches)
