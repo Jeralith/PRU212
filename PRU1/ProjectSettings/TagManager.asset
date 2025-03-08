@@ -19,7 +19,7 @@ TagManager:
   - UICustom
   - Transition
   - Killable
-  - 
+  - Map
   - 
   - 
   - 
@@ -46,6 +46,12 @@ TagManager:
     locked: 0
   - name: Background
     uniqueID: 2981150409
+    locked: 0
+  - name: Middlebackground
+    uniqueID: 191312587
+    locked: 0
+  - name: FrontBackground
+    uniqueID: 117975959
     locked: 0
   - name: Water
     uniqueID: 3093894227
