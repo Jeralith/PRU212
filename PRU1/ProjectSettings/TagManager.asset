@@ -7,6 +7,10 @@ TagManager:
   - Ground
   - Transition
   - Killable
+  - Ladder
+  - Platform
+  - Ice
+  - Torch
   layers:
   - Default
   - TransparentFX
@@ -19,9 +23,8 @@ TagManager:
   - UICustom
   - Transition
   - Killable
-  - Map
-  - 
-  - 
+  - Spring
+  - Ice
   - 
   - 
   - 
