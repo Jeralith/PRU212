@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "420041272423",
+    "firebase_url": "https://pru212-935c1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "pru212-935c1",
+    "storage_bucket": "pru212-935c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420041272423:android:814bf633d57961a6b638c2",
+        "android_client_info": {
+          "package_name": "com.fpt.vn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFusG5HRB6eLkqIdyH24MogNxbi5Ht09U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
