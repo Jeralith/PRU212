@@ -8,13 +8,13 @@ public class PlayerMovement : MonoBehaviour
     #region Variables
     #region Fundementals
     [Header("Fundementals")]
-     
+
     [SerializeField] private Collider2D _groundCollider;
     [SerializeField] private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _maxFallSpeed = -20f;
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
-    
+
     [SerializeField, Range(0.5f, 2f)] private float _accelerationValue = 1.2f;
     [SerializeField, Range(0.5f, 2f)] private float _decelerationValue = 1.2f;
     [SerializeField, Range(0f, 1f)] private float _frictionAmountValue = 0.5f;
@@ -352,7 +352,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private float FallSpeed() => Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? _maxFallSpeed * _maxFallSpeedMultiflier : _maxFallSpeed;
     //flip player's entire model horizontally when moving opposite direction
-    
+
     private void Flip()
     {
         if (_isFacingRight && xRaw < 0f || !_isFacingRight && xRaw > 0f)
