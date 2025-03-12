@@ -14,6 +14,8 @@ public class HealthManager : MonoBehaviour
     public event Action OnPlayerDie;
 
     private GameObject[] torches;
+    public GameObject _conBoss;
+    public Slider _bossHealth;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -25,9 +27,15 @@ public class HealthManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        
+
         if(healthAmount >= 100)
         {
             playerMovement.Die();
+            _bossHealth.value = 50;
+            _conBoss.transform.position = new Vector3(45f, -6f, 0f);
+            _conBoss.SetActive(false);
             healthAmount = 0;
         }
         //bool nearTorch = true;

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -138,7 +139,8 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     public HealthManager _healthManager;
-
+    public GameObject _conBoss;
+    public Slider _bosshealth;
     #endregion
     private void Awake()
     {
@@ -210,7 +212,28 @@ public class PlayerMovement : MonoBehaviour
             flashEffect.CallFlash(1f, 0.2f, _deathColor);
             Die();
         }
+        if (other.gameObject.CompareTag("GroundBoss"))
+        {
+            _conBoss.SetActive(true);
+        }
+
     }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Boss"))
+        {
+            flashEffect.CallFlash(1f, 0.2f, _deathColor);
+            Die();
+            _bosshealth.value = 50;
+            _conBoss.transform.position = new Vector3(45f, -6f, 0f);
+            _conBoss.SetActive(false);
+        }
+
+        
+    }
+
+    
 
     #endregion
     #region Basic Movement
