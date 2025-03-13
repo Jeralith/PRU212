@@ -4,9 +4,17 @@ using PlayFab;
 using PlayFab.ClientModels;
 using UnityEngine.SceneManagement;
 using System;
+using UnityEngine.UI;
+using System.Collections;
 
 public class LoginPagePlayfab : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject WelcomeObject;
+    [SerializeField]
+    private GameManager gameManager;
+    [SerializeField]
+    private TextMeshProUGUI WelcomeText;
     //[SerializeField] TextMeshProUGUI TopText;
     [SerializeField] TextMeshProUGUI MessageText;
 
@@ -24,6 +32,9 @@ public class LoginPagePlayfab : MonoBehaviour
     [Header("Recovery")]
     [SerializeField] TMP_InputField EmailRecoverInput;
     [SerializeField] GameObject RecoveryPage;
+
+    
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -54,7 +65,12 @@ public class LoginPagePlayfab : MonoBehaviour
         var request = new LoginWithEmailAddressRequest
         {
             Email = EmailInput.text,
-            Password = PassInput.text
+            Password = PassInput.text,
+
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         };
         PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginSuccess, OnError);
 
@@ -84,9 +100,21 @@ public class LoginPagePlayfab : MonoBehaviour
 
     private void OnLoginSuccess(LoginResult result)
     {
-        MessageText.text = "Loggin in";
-        SceneManager.LoadScene("MainMenuScene");
-        Debug.Log("Loggin in!");
+        string name = null;
+        if (result.InfoResultPayload != null)
+        {
+            name = result.InfoResultPayload.PlayerProfile.DisplayName;
+        }
+        
+        WelcomeObject.SetActive(true);
+        // write some good for getting user name
+        WelcomeText.text = "Welcome " + name;
+
+        if (gameManager != null)
+        {
+            gameManager.playerName = name;
+        }
+        StartCoroutine(LoadNextScene());
     }
     private void OnRegisterSuccess(RegisterPlayFabUserResult result)
     {
@@ -120,4 +148,12 @@ public class LoginPagePlayfab : MonoBehaviour
         RecoveryPage.SetActive(true);
     }
     #endregion
+
+    IEnumerator LoadNextScene()
+    {
+        yield return new WaitForSeconds(2);
+        MessageText.text = "Loggin in";
+        SceneManager.LoadScene("MainMenuScene");
+        Debug.Log("Loggin in!");
+    }
 }
