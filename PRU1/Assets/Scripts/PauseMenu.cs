@@ -16,7 +16,7 @@ public class PauseMenu : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        pauseMenu.SetActive(false);
+        //pauseMenu.SetActive(false);
         _player = player.GetComponent<PlayerMovement>();
         _lowPass = _backgroundMusic.GetComponent<AudioLowPassFilter>();
     }
@@ -88,6 +88,10 @@ public class PauseMenu : MonoBehaviour
     {
         _player.Die();
         ResumeGame();
+    }
+    public void LoadMainMenu()
+    {
+        SceneManager.LoadScene("MainMenuScene");
     }
 
     public void QuitGame()
