@@ -11,6 +11,8 @@ TagManager:
   - Platform
   - Ice
   - Torch
+  - Boss
+  - GroundBoss
   layers:
   - Default
   - TransparentFX
