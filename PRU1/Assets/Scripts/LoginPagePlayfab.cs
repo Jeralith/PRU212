@@ -1,9 +1,11 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
+using UnityEngine.SceneManagement;
+using System;
 
-public class Login : MonoBehaviour
+public class LoginPagePlayfab : MonoBehaviour
 {
     //[SerializeField] TextMeshProUGUI TopText;
     [SerializeField] TextMeshProUGUI MessageText;
@@ -45,8 +47,46 @@ public class Login : MonoBehaviour
             Password = PassRegisterInput.text,
             RequireBothUsernameAndEmail = false
         };
-
         PlayFabClientAPI.RegisterPlayFabUser(request, OnRegisterSuccess, OnError);
+    }
+    public void Login()
+    {
+        var request = new LoginWithEmailAddressRequest
+        {
+            Email = EmailInput.text,
+            Password = PassInput.text
+        };
+        PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginSuccess, OnError);
+
+    }
+    public void RecoverUser()
+    {
+        var request = new SendAccountRecoveryEmailRequest
+        {
+            Email = EmailRecoverInput.text,
+            TitleId = "14D480"
+        };
+
+        PlayFabClientAPI.SendAccountRecoveryEmail(request, OnRecoverySucces, OnErrorRecovery);
+    }
+
+    private void OnErrorRecovery(PlayFabError error)
+    {
+        MessageText.text = "No Email Found!";
+        Debug.LogError(error.GenerateErrorReport());
+    }
+
+    private void OnRecoverySucces(SendAccountRecoveryEmailResult result)
+    {
+        OpenLoginPage();
+        MessageText.text = "Recovery Mail Sent";
+    }
+
+    private void OnLoginSuccess(LoginResult result)
+    {
+        MessageText.text = "Loggin in";
+        SceneManager.LoadScene("MainMenuScene");
+        Debug.Log("Loggin in!");
     }
     private void OnRegisterSuccess(RegisterPlayFabUserResult result)
     {

@@ -5462,7 +5462,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 148679979}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1049985757}
+        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
+        m_MethodName: Login
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &148679979
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6979,7 +6991,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enter your username
+  m_text: Enter your Display Name
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6b0a2ce0ccc43e045bca753472d396f9, type: 2}
   m_sharedMaterial: {fileID: -911165333074835506, guid: 6b0a2ce0ccc43e045bca753472d396f9, type: 2}
@@ -9046,8 +9058,8 @@ MonoBehaviour:
   m_VerticalScrollbarEventHandler: {fileID: 0}
   m_LayoutGroup: {fileID: 0}
   m_ScrollSensitivity: 1
-  m_ContentType: 0
-  m_InputType: 0
+  m_ContentType: 7
+  m_InputType: 2
   m_AsteriskChar: 42
   m_KeyboardType: 0
   m_LineType: 0
@@ -9355,7 +9367,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1036507124}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1049985757}
+        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
+        m_MethodName: RecoverUser
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1036507124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10598,7 +10622,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1366201377
 RectTransform:
   m_ObjectHideFlags: 0
@@ -17535,8 +17559,8 @@ MonoBehaviour:
   m_VerticalScrollbarEventHandler: {fileID: 0}
   m_LayoutGroup: {fileID: 0}
   m_ScrollSensitivity: 1
-  m_ContentType: 0
-  m_InputType: 0
+  m_ContentType: 7
+  m_InputType: 2
   m_AsteriskChar: 42
   m_KeyboardType: 0
   m_LineType: 0
@@ -17976,7 +18000,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2003655024
 RectTransform:
   m_ObjectHideFlags: 0
