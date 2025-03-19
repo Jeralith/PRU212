@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+
 using Unity.Cinemachine;
+
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -137,6 +140,14 @@ public class PlayerMovement : MonoBehaviour
     private bool isSoundCoroutineRunning = false;
     #endregion
 
+    [SerializeField] private bool _randomSpawn = false;
+    [Space]
+    [Header("Respawn")]
+    [SerializeField] private List<GameObject> spawnPoints = new List<GameObject>();
+    [SerializeField] private bool useRandomSpawnPoint = false;
+    private GameObject _currentTargetObject;
+
+
     public HealthManager _healthManager;
 
     #endregion
@@ -147,7 +158,7 @@ public class PlayerMovement : MonoBehaviour
         _collider = GetComponent<Collider2D>();
         _playerAnim = GetComponent<PlayerAnimation>();
         active = true;
-        SetRespawnPoint(transform.position);
+        SetRespawnPoint(_randomSpawn ? GetRandomRespawnPoint() : transform.position);
         Time.timeScale = timeScale;
         //_healthManager.OnPlayerDie += Die;
     }
@@ -581,11 +592,63 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator Respawn()
     {
         yield return new WaitForSeconds(0.5f);
-        transform.position = _respawnPoint;
+
+        transform.position = _randomSpawn ? GetRandomRespawnPoint() : _respawnPoint;
+
         active = true;
         _collider.enabled = true;
         if (_groundCollider != null) _groundCollider.GetComponent<Collider2D>().enabled = true;
     }
+
+    // Thêm phương thức mới này
+    private Vector2 GetRandomRespawnPoint()
+    {
+        if (spawnPoints.Count > 0)
+        {
+            // Trước tiên, ẩn tất cả các điểm spawn (nếu chúng đang hiển thị)
+            foreach (GameObject spawnPoint in spawnPoints)
+            {
+                if (spawnPoint != null)
+                    spawnPoint.SetActive(false);
+            }
+
+            GameObject selectedSpawn;
+
+            if (useRandomSpawnPoint)
+            {
+                // Chọn điểm spawn ngẫu nhiên
+                selectedSpawn = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
+            }
+            else
+            {
+                // Sử dụng điểm spawn đầu tiên theo mặc định
+                selectedSpawn = spawnPoints[0];
+            }
+
+            // Kích hoạt GameObject đã chọn để hiển thị nó
+            if (selectedSpawn != null)
+            {
+                GameObject target;
+                var check = true;
+                while (check)
+                {
+                    target = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
+                    if (target.transform != selectedSpawn.transform)
+                    {
+                        check = false;
+                        target.SetActive(true);
+                        _currentTargetObject = target;
+                    }
+                }
+            }
+
+            return selectedSpawn != null ? selectedSpawn.transform.position : _respawnPoint;
+        }
+
+        // Nếu không có điểm spawn, sử dụng điểm respawn mặc định
+        return _respawnPoint;
+    }
+
     public void SetRespawnPoint(Vector2 position)
     {
         _respawnPoint = position;
