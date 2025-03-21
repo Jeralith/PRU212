@@ -8,7 +8,7 @@ public class LeaderboardManager : MonoBehaviour
 {
     public Transform leaderboardContainer;
     public GameObject leaderboardRowPrefab;
-
+    
     void Awake()
     {
         if (leaderboardContainer == null)
@@ -31,7 +31,7 @@ public class LeaderboardManager : MonoBehaviour
             {
                 new StatisticUpdate
                 {
-                    StatisticName = "HighScores", // This must match the leaderboard name in PlayFab
+                    StatisticName = "HighScores",
                     Value = score
                 }
             }
@@ -43,7 +43,7 @@ public class LeaderboardManager : MonoBehaviour
     private void OnScoreSubmitSuccess(UpdatePlayerStatisticsResult result)
     {
         Debug.Log("Score submitted successfully!");
-        LoadLeaderboard();  // Reload the leaderboard after submitting
+        LoadLeaderboard(); 
     }
 
     private void OnScoreSubmitError(PlayFabError error)

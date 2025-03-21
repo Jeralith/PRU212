@@ -7,12 +7,6 @@ public class GameManager : MonoBehaviour
 {
     private bool isLoggedIn = false;
 
-    void Start()
-    {
-        // Automatically log in for testing
-        TestLogin();
-    }
-
     public void TestLogin()
     {
         var request = new LoginWithCustomIDRequest 
