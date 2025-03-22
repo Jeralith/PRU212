@@ -144,7 +144,6 @@ public class PlayerMovement : MonoBehaviour
     [Space]
     [Header("Respawn")]
     [SerializeField] private List<GameObject> spawnPoints = new List<GameObject>();
-    [SerializeField] private bool useRandomSpawnPoint = false;
     private GameObject _currentTargetObject;
 
 
@@ -614,7 +613,7 @@ public class PlayerMovement : MonoBehaviour
 
             GameObject selectedSpawn;
 
-            if (useRandomSpawnPoint)
+            if (_randomSpawn)
             {
                 // Chọn điểm spawn ngẫu nhiên
                 selectedSpawn = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
