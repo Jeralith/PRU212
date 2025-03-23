@@ -1,0 +1,4 @@
+# Ignore Firebase SDK large files
+Assets/Firebase/*
+!Assets/Firebase/google-services.json
+!Assets/Firebase/Editor/*
