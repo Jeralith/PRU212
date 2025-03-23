@@ -1,10 +1,20 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
+using UnityEngine.SceneManagement;
+using System;
+using UnityEngine.UI;
+using System.Collections;
 
-public class Login : MonoBehaviour
+public class LoginPagePlayfab : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject WelcomeObject;
+    [SerializeField]
+    private GameManager gameManager;
+    [SerializeField]
+    private TextMeshProUGUI WelcomeText;
     //[SerializeField] TextMeshProUGUI TopText;
     [SerializeField] TextMeshProUGUI MessageText;
 
@@ -22,6 +32,9 @@ public class Login : MonoBehaviour
     [Header("Recovery")]
     [SerializeField] TMP_InputField EmailRecoverInput;
     [SerializeField] GameObject RecoveryPage;
+
+    
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -45,8 +58,63 @@ public class Login : MonoBehaviour
             Password = PassRegisterInput.text,
             RequireBothUsernameAndEmail = false
         };
-
         PlayFabClientAPI.RegisterPlayFabUser(request, OnRegisterSuccess, OnError);
+    }
+    public void Login()
+    {
+        var request = new LoginWithEmailAddressRequest
+        {
+            Email = EmailInput.text,
+            Password = PassInput.text,
+
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
+        };
+        PlayFabClientAPI.LoginWithEmailAddress(request, OnLoginSuccess, OnError);
+
+    }
+    public void RecoverUser()
+    {
+        var request = new SendAccountRecoveryEmailRequest
+        {
+            Email = EmailRecoverInput.text,
+            TitleId = "14D480"
+        };
+
+        PlayFabClientAPI.SendAccountRecoveryEmail(request, OnRecoverySucces, OnErrorRecovery);
+    }
+
+    private void OnErrorRecovery(PlayFabError error)
+    {
+        MessageText.text = "No Email Found!";
+        Debug.LogError(error.GenerateErrorReport());
+    }
+
+    private void OnRecoverySucces(SendAccountRecoveryEmailResult result)
+    {
+        OpenLoginPage();
+        MessageText.text = "Recovery Mail Sent";
+    }
+
+    private void OnLoginSuccess(LoginResult result)
+    {
+        string name = null;
+        if (result.InfoResultPayload != null)
+        {
+            name = result.InfoResultPayload.PlayerProfile.DisplayName;
+        }
+        
+        WelcomeObject.SetActive(true);
+        // write some good for getting user name
+        WelcomeText.text = "Welcome " + name;
+
+        if (gameManager != null)
+        {
+            gameManager.playerName = name;
+        }
+        StartCoroutine(LoadNextScene());
     }
     private void OnRegisterSuccess(RegisterPlayFabUserResult result)
     {
@@ -80,4 +148,12 @@ public class Login : MonoBehaviour
         RecoveryPage.SetActive(true);
     }
     #endregion
+
+    IEnumerator LoadNextScene()
+    {
+        yield return new WaitForSeconds(2);
+        MessageText.text = "Loggin in";
+        SceneManager.LoadScene("MainMenuScene");
+        Debug.Log("Loggin in!");
+    }
 }
