@@ -13,10 +13,10 @@ public class MainMenuManager : MonoBehaviour
                 sceneName = "TuanAnhLevels";
                 break;
             case 2:
-                sceneName = "NgocAnhLevels";
+                sceneName = "demodeng";
                 break;
             case 3:
-                sceneName = "TuanAnhLevels";
+                sceneName = "NgocAnhLevels";
                 break;
             case 4:
                 sceneName = "TuanAnhLevels";

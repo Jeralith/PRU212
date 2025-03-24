@@ -23,6 +23,7 @@ public class ScreenManager : MonoBehaviour
             if (i >= _currentScreenIndex - 1 && i <= _currentScreenIndex + 1)
             {
                 screens[i].SetActive(true);
+                
             }
             else 
             {

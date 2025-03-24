@@ -132,6 +132,14 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 147117
+  packageName: GothicVania Church Pack
+  packageVersion: 1.0
+  assetPath: Assets/GothicVania Church/Sprites/Enemies/Angel-Attack/angel-attack-3.png
+  uploadId: 312869
