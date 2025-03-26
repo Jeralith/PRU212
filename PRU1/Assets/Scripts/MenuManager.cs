@@ -83,6 +83,10 @@ public class MenuManager : MonoBehaviour
         UpdatedName = false;
         SceneManager.LoadScene("LoginScene");
     }
+    public void LoadRankScene()
+    {
+        SceneManager.LoadScene("Leaderboard");
+    }
     #endregion
     public void QuitGame()
     {
