@@ -151,9 +151,9 @@ public class LoginPagePlayfab : MonoBehaviour
 
     IEnumerator LoadNextScene()
     {
-        yield return new WaitForSeconds(2);
         MessageText.text = "Loggin in";
-        SceneManager.LoadScene("MainMenuScene");
+        yield return new WaitForSeconds(2);
+        SceneManager.LoadScene("MenuScene");
         Debug.Log("Loggin in!");
     }
 }
