@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+
 using Unity.Cinemachine;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,13 +12,13 @@ public class PlayerMovement : MonoBehaviour
     #region Variables
     #region Fundementals
     [Header("Fundementals")]
-     
+
     [SerializeField] private Collider2D _groundCollider;
     [SerializeField] private bool _isFacingRight = true;
     [SerializeField] private float _speed = 15f;
     [SerializeField] private float _maxFallSpeed = -20f;
     [SerializeField] private float _maxFallSpeedMultiflier = 1.5f;
-    
+
     [SerializeField, Range(0.5f, 2f)] private float _accelerationValue = 1.2f;
     [SerializeField, Range(0.5f, 2f)] private float _decelerationValue = 1.2f;
     [SerializeField, Range(0f, 1f)] private float _frictionAmountValue = 0.5f;
@@ -138,6 +141,13 @@ public class PlayerMovement : MonoBehaviour
     private bool isSoundCoroutineRunning = false;
     #endregion
 
+    [SerializeField] private bool _randomSpawn = false;
+    [Space]
+    [Header("Respawn")]
+    [SerializeField] private List<GameObject> spawnPoints = new List<GameObject>();
+    private GameObject _currentTargetObject;
+
+
     public HealthManager _healthManager;
     public GameObject _conBoss;
     public Slider _bosshealth;
@@ -149,7 +159,7 @@ public class PlayerMovement : MonoBehaviour
         _collider = GetComponent<Collider2D>();
         _playerAnim = GetComponent<PlayerAnimation>();
         active = true;
-        SetRespawnPoint(transform.position);
+        SetRespawnPoint(_randomSpawn ? GetRandomRespawnPoint() : transform.position);
         Time.timeScale = timeScale;
         //_healthManager.OnPlayerDie += Die;
     }
@@ -375,7 +385,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private float FallSpeed() => Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow) ? _maxFallSpeed * _maxFallSpeedMultiflier : _maxFallSpeed;
     //flip player's entire model horizontally when moving opposite direction
-    
+
     private void Flip()
     {
         if (_isFacingRight && xRaw < 0f || !_isFacingRight && xRaw > 0f)
@@ -604,11 +614,63 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator Respawn()
     {
         yield return new WaitForSeconds(0.5f);
-        transform.position = _respawnPoint;
+
+        transform.position = _randomSpawn ? GetRandomRespawnPoint() : _respawnPoint;
+
         active = true;
         _collider.enabled = true;
         if (_groundCollider != null) _groundCollider.GetComponent<Collider2D>().enabled = true;
     }
+
+    // Thêm phương thức mới này
+    private Vector2 GetRandomRespawnPoint()
+    {
+        if (spawnPoints.Count > 0)
+        {
+            // Trước tiên, ẩn tất cả các điểm spawn (nếu chúng đang hiển thị)
+            foreach (GameObject spawnPoint in spawnPoints)
+            {
+                if (spawnPoint != null)
+                    spawnPoint.SetActive(false);
+            }
+
+            GameObject selectedSpawn;
+
+            if (_randomSpawn)
+            {
+                // Chọn điểm spawn ngẫu nhiên
+                selectedSpawn = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
+            }
+            else
+            {
+                // Sử dụng điểm spawn đầu tiên theo mặc định
+                selectedSpawn = spawnPoints[0];
+            }
+
+            // Kích hoạt GameObject đã chọn để hiển thị nó
+            if (selectedSpawn != null)
+            {
+                GameObject target;
+                var check = true;
+                while (check)
+                {
+                    target = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
+                    if (target.transform != selectedSpawn.transform)
+                    {
+                        check = false;
+                        target.SetActive(true);
+                        _currentTargetObject = target;
+                    }
+                }
+            }
+
+            return selectedSpawn != null ? selectedSpawn.transform.position : _respawnPoint;
+        }
+
+        // Nếu không có điểm spawn, sử dụng điểm respawn mặc định
+        return _respawnPoint;
+    }
+
     public void SetRespawnPoint(Vector2 position)
     {
         _respawnPoint = position;
