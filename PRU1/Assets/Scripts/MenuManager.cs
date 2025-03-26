@@ -57,7 +57,7 @@ public class MenuManager : MonoBehaviour
     }
     public void LoadGameLevel5()
     {
-        SceneManager.LoadScene("TuanAnhLevels");
+        SceneManager.LoadScene("TempleofChaos-Nam");
     }
 
     #endregion
