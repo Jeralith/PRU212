@@ -5375,9 +5375,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: LoadGameLevel2
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5510,7 +5510,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 378463041}
-  - component: {fileID: 378463042}
   - component: {fileID: 378463043}
   m_Layer: 0
   m_Name: MenuManager
@@ -5534,18 +5533,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1161665225}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &378463042
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 378463040}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd55c5f932913b146b8391964e8da59d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &378463043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5558,9 +5545,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4bd3a9ade094d048be1277430fb74ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameManager: {fileID: 0}
+  playerProfile: {fileID: 0}
   PlayerName: {fileID: 1240343293}
   SystemText: {fileID: 1290481229}
+  MainMenuPage: {fileID: 559549110}
+  LevelsMenuPage: {fileID: 150014293}
 --- !u!1 &408616257
 GameObject:
   m_ObjectHideFlags: 0
@@ -5644,9 +5633,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: LoadGameLevel4
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6263,7 +6252,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &830626546
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6326,7 +6315,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 830626548}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: QuitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &830626548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6584,9 +6585,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: OpenLevelsMenuPage
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6717,9 +6718,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: LoadGameLevel5
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -12931,9 +12932,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: LogOut
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13064,9 +13065,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: LoadGameLevel1
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13197,9 +13198,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LoginPagePlayfab, Assembly-CSharp
-        m_MethodName: Login
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: LoadGameLevel3
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -13958,9 +13959,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Login, Assembly-CSharp
-        m_MethodName: OpenLoginPage
+      - m_Target: {fileID: 378463043}
+        m_TargetAssemblyTypeName: MenuManager, Assembly-CSharp
+        m_MethodName: OpenMainMenuPage
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

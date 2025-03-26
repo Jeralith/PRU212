@@ -8858,7 +8858,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   WelcomeObject: {fileID: 347215073}
-  gameManager: {fileID: 1074752656}
+  playerProfile: {fileID: 1074752656}
   WelcomeText: {fileID: 1240343293}
   MessageText: {fileID: 1290481229}
   EmailInput: {fileID: 271862505}
@@ -9150,7 +9150,7 @@ GameObject:
   - component: {fileID: 1074752655}
   - component: {fileID: 1074752656}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: PlayerProfile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9180,7 +9180,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1074752654}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc6e9172449285743b206e296d9e852e, type: 3}
+  m_Script: {fileID: 11500000, guid: d22f98c3b6605e747b5ea404e2a9866f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   playerName: 

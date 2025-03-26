@@ -1,38 +1,20 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerProfile : MonoBehaviour
 {
-    [SerializeField]  GameManager gameManager;
-    [SerializeField]  TextMeshProUGUI PlayerName;
-    [SerializeField]  TextMeshProUGUI SystemText;
-    bool UpdatedName = false;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
+    public static PlayerProfile Instance;
 
-    }
+    [SerializeField] public string playerName;
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        UpdateName();
-    }
-
-    private void UpdateName()
-    {
-        if (gameManager == null)
+        if (Instance != null && Instance != this)
         {
-            gameManager = FindFirstObjectByType<GameManager>();
+            Destroy(gameObject); // N?u ?ã t?n t?i, xoá b?n m?i
+            return;
         }
 
-        if (gameManager != null && UpdatedName == false)
-        {
-            PlayerName.text = gameManager.playerName;
-            SystemText.text = "Welcome" + gameManager.playerName;
-            print("Welcome " + gameManager.playerName); //console
-            UpdatedName = true;
-        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // Ch? g?i 1 l?n duy nh?t ? object ??u tiên
     }
 }
