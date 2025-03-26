@@ -27,8 +27,8 @@ TagManager:
   - Killable
   - Spring
   - Ice
-  - 
-  - 
+  - Climbing
+  - Map
   - 
   - 
   - 
@@ -47,11 +47,26 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 2981150409
+    locked: 0
+  - name: Middlebackground
+    uniqueID: 191312587
+    locked: 0
+  - name: FrontBackground
+    uniqueID: 117975959
+    locked: 0
+  - name: Water
+    uniqueID: 3093894227
+    locked: 0
+  - name: Climbing
+    uniqueID: 953159471
+    locked: 0
+  - name: Platforms
+    uniqueID: 1306945531
+    locked: 0
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: CameraSortingLayer
-    uniqueID: 678269311
     locked: 0
   m_RenderingLayers:
   - Default
