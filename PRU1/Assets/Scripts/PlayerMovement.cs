@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using TMPro;
+
 using Unity.Cinemachine;
 
 using UnityEngine;
@@ -147,6 +149,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private List<GameObject> spawnPoints = new List<GameObject>();
     private GameObject _currentTargetObject;
 
+    [SerializeField] TextMeshProUGUI scoreText;
+    [SerializeField] int Score = 0;
+    [SerializeField] GameObject heartOfPlayer;
 
     public HealthManager _healthManager;
     public GameObject _conBoss;
@@ -162,6 +167,10 @@ public class PlayerMovement : MonoBehaviour
         SetRespawnPoint(_randomSpawn ? GetRandomRespawnPoint() : transform.position);
         Time.timeScale = timeScale;
         //_healthManager.OnPlayerDie += Die;
+        if (scoreText != null)
+        {
+            scoreText.text = "Score: " + Score;
+        }
     }
     private void Update() //update sẽ chạy mỗi frame
     {
@@ -240,10 +249,10 @@ public class PlayerMovement : MonoBehaviour
             _conBoss.SetActive(false);
         }
 
-        
+
     }
 
-    
+
 
     #endregion
     #region Basic Movement
@@ -709,5 +718,19 @@ public class PlayerMovement : MonoBehaviour
         _acceleration = _accelerationValue;
         _deceleration = IsOnIce() ? _iceDeceleration : _decelerationValue;
         _frictionAmount = IsOnIce() ? _iceFriction : _frictionAmountValue;
+    }
+
+    public void AddScore(int score)
+    {
+        if (scoreText != null)
+        {
+            Score += score;
+            scoreText.text = "Score: " + Score;
+            if (Score == 3 && heartOfPlayer != null)
+            {
+                Vector3 spawnPosition = transform.position + new Vector3(1f, 0f, 0f);
+                Instantiate(heartOfPlayer, spawnPosition, Quaternion.identity).SetActive(true);
+            }
+        }
     }
 }
