@@ -12,7 +12,7 @@ public class LoginPagePlayfab : MonoBehaviour
     [SerializeField]
     private GameObject WelcomeObject;
     [SerializeField]
-    private GameManager gameManager;
+    private PlayerProfile playerProfile;
     [SerializeField]
     private TextMeshProUGUI WelcomeText;
     //[SerializeField] TextMeshProUGUI TopText;
@@ -110,9 +110,9 @@ public class LoginPagePlayfab : MonoBehaviour
         // write some good for getting user name
         WelcomeText.text = "Welcome " + name;
 
-        if (gameManager != null)
+        if (PlayerProfile.Instance != null)
         {
-            gameManager.playerName = name;
+            PlayerProfile.Instance.playerName = name;
         }
         StartCoroutine(LoadNextScene());
     }
@@ -151,9 +151,9 @@ public class LoginPagePlayfab : MonoBehaviour
 
     IEnumerator LoadNextScene()
     {
-        yield return new WaitForSeconds(2);
         MessageText.text = "Loggin in";
-        SceneManager.LoadScene("MainMenuScene");
+        yield return new WaitForSeconds(2);
+        SceneManager.LoadScene("MenuScene");
         Debug.Log("Loggin in!");
     }
 }
