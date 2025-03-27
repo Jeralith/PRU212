@@ -9,17 +9,20 @@ public class Boss : MonoBehaviour {
     public int health;
     public int damage;
     private float timeBtwDamage = 1.5f;
-    
+    public GameObject heart;
 
     //public Animator camAnim;
     public Slider healthBar;
     private Animator anim;
+    private CircleCollider2D _collider;
     public bool isDead;
 
     private void Start()
     {
-        anim = GetComponent<Animator>();
         
+        anim = GetComponent<Animator>();
+        _collider = GetComponent<CircleCollider2D>();
+        heart.SetActive(false);
     }
 
     public void OnEnable()
@@ -39,6 +42,8 @@ public class Boss : MonoBehaviour {
 
         if (health <= 0) {
             anim.SetTrigger("death");
+            _collider.enabled = false;
+            heart.SetActive(true);
         }
 
         // give the player some time to recover before taking more damage !
