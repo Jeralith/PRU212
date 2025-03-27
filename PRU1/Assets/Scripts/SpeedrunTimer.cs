@@ -35,6 +35,10 @@ public class SpeedrunTimer : MonoBehaviour
     {
         stopwatch.Start();
     }
+    public double GetElapsedSeconds()
+    {
+        return stopwatch.Elapsed.TotalSeconds;
+    } 
 
-    
+
 }
