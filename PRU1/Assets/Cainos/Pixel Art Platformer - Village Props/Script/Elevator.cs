@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 using Cainos.LucidEditor;
 using Cainos.Common;
@@ -63,7 +63,6 @@ namespace Cainos.PixelArtPlatformer_VillageProps
         private float targetLength;
         private SecondOrderDynamics secondOrderDynamics = new SecondOrderDynamics(4.0f, 0.3f, -0.3f);
 
-        private bool isActivated = false;
 
         private void Start()
         {
@@ -72,13 +71,10 @@ namespace Cainos.PixelArtPlatformer_VillageProps
             targetLength = Length;
 
             secondOrderDynamics.Reset(targetLength);
-            isActivated = false; // Ban đầu thang máy không hoạt động
         }
 
         private void Update()
         {
-            if (!isActivated) return;
-
             if (IsWaiting)
             {
                 waitTimer += Time.deltaTime;
@@ -108,10 +104,6 @@ namespace Cainos.PixelArtPlatformer_VillageProps
             }
 
             targetLength += curSpeed * Time.deltaTime;
-        }
-        public void ActivateElevator()
-        {
-            isActivated = true;
         }
 
         private void FixedUpdate()
